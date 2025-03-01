@@ -1,6 +1,5 @@
-```markdown
 # Discord.py Enhanced
-
+[日本語](/README_JA.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
@@ -42,9 +41,11 @@ python bot.py
 ## 💡 Basic Usage
 
 ```python
+import datetime
 import discord
 from discord.ext import commands
-from Dispyplus import EnhancedBot, EnhancedContext, log_execution
+from Dispyplus import EnhancedBot, EnhancedContext, log_execution, ConfigManager
+
 config = ConfigManager("config.ini")
 intents = discord.Intents.all()
 bot = EnhancedBot(
@@ -65,8 +66,9 @@ async def uptime(ctx: EnhancedContext):
 async def userinfo(ctx: EnhancedContext, member: discord.Member):
     entries = [f"name: {member.name}", f"ID: {member.id}", ...]
     await ctx.paginate(entries, per_page=5)
-    
-await bot.start(config.get('Bot', 'token'))
+
+async def main():
+    await bot.start(config.get('Bot', 'token'))
 ```
 
 ## 🤝 Contributing
