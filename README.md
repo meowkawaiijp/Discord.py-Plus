@@ -1,8 +1,7 @@
 # Discord.py Enhanced
-[日本語](/README_JA.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-
+[日本語](/README_JA.md)
 An enhanced framework for Discord.py with advanced features.
 
 ## 🚀 Key Features
