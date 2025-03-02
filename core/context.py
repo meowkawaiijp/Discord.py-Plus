@@ -18,7 +18,23 @@ class EnhancedContext(commands.Context):
     def is_dm(self) -> bool:
         """DMかどうかを判定する"""
         return self.guild is None
-
+    
+    async def create_thread(
+        self,
+        name: str,
+        auto_archive_duration: int = 1440,
+        reason: Optional[str] = None
+    ) -> Thread:
+        """スレッドを作成して返す"""
+        if not isinstance(self.channel, discord.TextChannel):
+            raise commands.CommandError("テキストチャンネルでのみスレッドを作成できます")
+            
+        thread = await self.channel.create_thread(
+            name=name,
+            auto_archive_duration=auto_archive_duration,
+            reason=reason
+        )
+        return thread
     async def success(self, message: str, **kwargs) -> discord.Message:
         """成功メッセージをEmbedで送信する"""
         embed = discord.Embed(
@@ -34,7 +50,7 @@ class EnhancedContext(commands.Context):
             color=discord.Color.orange()
         )
         return await self.send(embed=embed, **kwargs)
-
+    
     async def error(self, message: str, **kwargs) -> discord.Message:
         """エラーメッセージをEmbedで送信する"""
         embed = discord.Embed(
