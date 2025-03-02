@@ -7,7 +7,7 @@ from datetime import timezone
 from pathlib import Path
 from typing import Optional, Coroutine, Dict, TypeVar
 from core.config import ConfigManager
-from core.view import EnhancedContext
+from core.other import EnhancedContext
 import discord
 from discord.ext import commands
 T = TypeVar('T')

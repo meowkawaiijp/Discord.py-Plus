@@ -3,7 +3,7 @@ import logging
 from core.Dispyplus import EnhancedBot
 from core.config import ConfigManager
 from core.decorators import log_execution
-from core.view import EnhancedContext
+from core.other import EnhancedContext
 import discord
 
 CONFIG_FILE = 'config.ini'
