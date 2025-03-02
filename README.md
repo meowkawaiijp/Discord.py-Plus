@@ -46,8 +46,8 @@ import asyncio
 import logging
 from core.Dispyplus import EnhancedBot
 from core.config import ConfigManager
-from core.context import EnhancedContext
 from core.decorators import log_execution
+from core.view import EnhancedContext
 import discord
 
 CONFIG_FILE = 'config.ini'
