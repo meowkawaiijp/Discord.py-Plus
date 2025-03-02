@@ -32,7 +32,7 @@ bot = EnhancedBot(
 
 @bot.hybrid_command(name="ping", description="pong")
 @log_execution()
-async def uptime(ctx: EnhancedContext):
+async def ping(ctx: EnhancedContext):
     await ctx.success(f"pong")
 
 async def main():
