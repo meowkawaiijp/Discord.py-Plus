@@ -4,7 +4,7 @@ import datetime
 from datetime import timezone
 from functools import wraps
 from typing import List, Callable, TypeVar
-from core.context import EnhancedContext
+from core.view import EnhancedContext
 import discord
 from discord.ext import commands
 T = TypeVar('T')

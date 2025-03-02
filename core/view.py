@@ -1,20 +1,13 @@
-import os
 import asyncio
-import logging
 import datetime
-from datetime import timezone
-from pathlib import Path
-from functools import wraps
-from typing import Optional, List, Union, Callable, Coroutine, Dict, TypeVar, Generic, cast
-from core.context import EnhancedContext
+import logging
+from typing import Optional, List, Union, Callable, TypeVar, Generic, cast
 import discord
 from discord.ext import commands
 T = TypeVar('T')
-class EnhancedView(discord.ui.View):
-    """タイムアウト処理を改善したView基底クラス
 
-    UIコンポーネント全体の無効化や、タイムアウト時のカスタム処理を実装。
-    """
+
+class EnhancedView(discord.ui.View):
     def __init__(self, timeout: Optional[float] = 180):
         super().__init__(timeout=timeout)
         self.message: Optional[discord.Message] = None
@@ -22,11 +15,6 @@ class EnhancedView(discord.ui.View):
         self._closed = False
 
     async def on_timeout(self) -> None:
-        """タイムアウト発生時の処理
-
-        ・内部ロックを用いて重複処理を防止  
-        ・全UIコンポーネントの無効化とカスタムタイムアウト処理の実行
-        """
         if self._closed:
             return
 
@@ -36,11 +24,6 @@ class EnhancedView(discord.ui.View):
             await self.on_custom_timeout()
 
     async def disable_all_components(self) -> None:
-        """すべてのUIコンポーネントを無効化する
-
-        ・ボタンなどのインタラクション部品の操作を無効にする  
-        ・メッセージが存在する場合は更新を試みる
-        """
         for item in self.children:
             if hasattr(item, 'disabled'):
                 item.disabled = True
@@ -70,10 +53,6 @@ class EnhancedView(discord.ui.View):
             )
 
 class Paginator(EnhancedView, Generic[T]):
-    """型安全かつ柔軟なページネーションシステム
-
-    指定データリストを複数ページに分割し、各ページをEmbedとして表示する。
-    """
     def __init__(
         self,
         data: List[T],
@@ -223,7 +202,69 @@ class Paginator(EnhancedView, Generic[T]):
                 instance.message = await destination.original_response()
 
         return instance
+class EnhancedContext(commands.Context):
+    """拡張コンテキストクラス
 
+    標準Contextに各種ユーティリティメソッドを追加。
+    """
+    @property
+    def created_at(self) -> datetime.datetime:
+        """メッセージの作成日時を返す"""
+        return self.message.created_at
+
+    @property
+    def is_dm(self) -> bool:
+        """DMかどうかを判定する"""
+        return self.guild is None
+
+    async def success(self, message: str, **kwargs) -> discord.Message:
+        """成功メッセージをEmbedで送信する"""
+        embed = discord.Embed(
+            description=f"✅ {message}",
+            color=discord.Color.green()
+        )
+        return await self.send(embed=embed, **kwargs)
+
+    async def warning(self, message: str, **kwargs) -> discord.Message:
+        """警告メッセージをEmbedで送信する"""
+        embed = discord.Embed(
+            description=f"⚠️ {message}",
+            color=discord.Color.yellow()
+        )
+        return await self.send(embed=embed, **kwargs)
+    
+    async def error(self, message: str, **kwargs) -> discord.Message:
+        """エラーメッセージをEmbedで送信する"""
+        embed = discord.Embed(
+            description=f"❌ {message}",
+            color=discord.Color.red()
+        )
+        return await self.send(embed=embed, **kwargs)
+    async def unknown(self, message: str, **kwargs) -> discord.Message:
+        """不明メッセージをEmbedで送信する"""
+        embed = discord.Embed(
+            description=f"❓ {message}",
+            color=discord.Color.red()
+        )
+        return await self.send(embed=embed, **kwargs)
+
+
+    async def info(self, message: str, **kwargs) -> discord.Message:
+        """情報メッセージをEmbedで送信する"""
+        embed = discord.Embed(
+            description=f"ℹ️ {message}",
+            color=discord.Color.blue()
+        )
+        return await self.send(embed=embed, **kwargs)
+
+    async def ask(self, message: str, **kwargs) -> Optional[bool]:
+        """確認ダイアログを表示し、ユーザーの選択結果を待機する"""
+        view = ConfirmationView(require_original_user=True)
+        return await view.ask(self, message, **kwargs)
+
+    async def paginate(self, data: List[T], **kwargs) -> Paginator[T]:
+        """ページネーション表示を開始する"""
+        return await Paginator.start(self, data, **kwargs)
 
 class ConfirmationView(EnhancedView):
     """拡張確認ダイアログ

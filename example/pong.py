@@ -2,11 +2,11 @@ import asyncio
 import logging
 from core.Dispyplus import EnhancedBot
 from core.config import ConfigManager
-from core.context import EnhancedContext
 from core.decorators import log_execution
+from core.view import EnhancedContext
 import discord
 
-CONFIG_FILE = 'config_path/config.ini'
+CONFIG_FILE = 'config.ini'
 
 config = ConfigManager(CONFIG_FILE)
 
@@ -32,7 +32,7 @@ bot = EnhancedBot(
 
 @bot.hybrid_command(name="ping", description="pong")
 @log_execution()
-async def uptime(ctx: EnhancedContext):
+async def ping(ctx: EnhancedContext):
     await ctx.success(f"pong")
 
 async def main():
