@@ -42,6 +42,14 @@ class EnhancedContext(commands.Context):
             color=discord.Color.red()
         )
         return await self.send(embed=embed, **kwargs)
+    async def unknown(self, message: str, **kwargs) -> discord.Message:
+        """不明メッセージをEmbedで送信する"""
+        embed = discord.Embed(
+            description=f"❓ {message}",
+            color=discord.Color.red()
+        )
+        return await self.send(embed=embed, **kwargs)
+
 
     async def info(self, message: str, **kwargs) -> discord.Message:
         """情報メッセージをEmbedで送信する"""
