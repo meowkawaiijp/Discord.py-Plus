@@ -25,6 +25,7 @@ class EnhancedBot(commands.Bot):
         self.logger = self.setup_logger()
         self.start_time = datetime.datetime.now(timezone.utc)
         self._config_watcher: Optional[asyncio.Task] = None
+        self.config.get('Extensions', 'directory', fallback='extensions')
         self.extension_dir = Path(self.config.get('Extensions', 'directory', fallback='extensions'))
 
     def setup_logger(self) -> logging.Logger:

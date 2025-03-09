@@ -26,7 +26,7 @@ An enhanced framework for Discord.py with advanced features.
 1. Clone the repository
 ```bash
 git clone https://github.com/meowkawaiijp/Discord.py-Plus.git
-cd Discord.py-Enhanced
+cd Discord.py-Plus
 ```
 
 2. Install dependencies
@@ -46,10 +46,12 @@ import asyncio
 import logging
 from core.Dispyplus import EnhancedBot
 from core.config import ConfigManager
-from core.decorators import log_execution
-from core.view import EnhancedContext
+from core.decorators import log_execution, permission_check
+from core.other import EnhancedContext
 import discord
-
+from discord.ext import commands
+from discord import app_commands
+import discord
 CONFIG_FILE = 'config.ini'
 
 config = ConfigManager(CONFIG_FILE)
@@ -79,6 +81,25 @@ bot = EnhancedBot(
 async def ping(ctx: EnhancedContext):
     await ctx.success(f"pong")
 
+@commands.hybrid_command(name="purge")
+@app_commands.describe(limit="delete message limit")
+@permission_check(permissions=['manage_messages'])
+async def purge_messages(
+        ctx: EnhancedContext,
+        limit: int = 10
+    ):
+        if ctx.interaction and not ctx.interaction.response.is_done():
+            await ctx.interaction.response.defer()
+
+        confirm = await ctx.ask(f"{limit}n oky?")
+        if not confirm:
+            return
+        
+        try:
+            deleted = await ctx.channel.purge(limit=limit + 1)
+            await ctx.success(f"{len(deleted)-1}n deleted.", delete_after=5)
+        except discord.Forbidden:
+            await ctx.error("permission error")
 async def main():
     await bot.start(config.get('Bot', 'token'))
 

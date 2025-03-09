@@ -16,7 +16,7 @@ def hybrid_group(**kwargs) -> Callable:
 
 
 def permission_check(**kwargs) -> Callable:
-    """拡張パーミッションチェックのデコレータ
+    """パーミッションチェックのデコレータ
 
     指定ロール・権限のチェックを行い、条件を満たさない場合は例外を発生させる
     """

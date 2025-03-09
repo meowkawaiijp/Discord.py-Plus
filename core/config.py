@@ -39,58 +39,57 @@ class ConfigManager:
             logging.error(f"最終更新時刻取得エラー: {str(e)}")
             return 0
 
-
-
     def get(self, section: str, key: str, fallback: Optional[Any] = None) -> Any:
-     """設定値を取得し、適切な型に変換して返す"""
-     if not self.config.has_section(section):
-        self.config.add_section(section)
-        logging.info(f"新規セクションを作成: [{section}]")
-        self.save()
-        return
+        """設定値を取得し、適切な型に変換して返す"""
+        if not self.config.has_section(section):
+            self.config.add_section(section)
+            logging.info(f"新規セクションを作成: [{section}]")
+            self.save()
+            return
 
-     if not self.config.has_option(section, key):
-        # fallbackが指定されていない場合、空の値を設定
-        if fallback is None:
-            self.set(section, key, "")  # 空の値を設定
-            logging.info(f"新規キーを設定（空の値）: [{section}] {key}=")
-            return None  # Noneを返す
-        else:
-            self.set(section, key, fallback)  # fallback値で設定
-            logging.info(f"新規キーを設定: [{section}] {key}={fallback}")
-            return fallback  # fallback値を返す
+        if not self.config.has_option(section, key):
+            # fallbackが指定されていない場合、空の値を設定
+            if fallback is None:
+                self.set(section, key, "")  # 空の値を設定
+                logging.info(f"新規キーを設定（空の値）: [{section}] {key}=")
+                return None  # Noneを返す
+            else:
+                self.set(section, key, fallback)  # fallback値で設定
+                logging.info(f"新規キーを設定: [{section}] {key}={fallback}")
+                return fallback  # fallback値を返す
 
-     # 値の取得と型変換
-     value = self.config.get(section, key)
-     return self._auto_convert_value(value)
+        # 値の取得と型変換
+        value = self.config.get(section, key)
+        return self._auto_convert_value(value)
 
     def _auto_convert_value(self, value: Optional[str]) -> Any:
-     """INIファイルの文字列値を適切な型に変換"""
-     # Noneまたは空文字列の場合
-     if value is None or value == "":
-        return None
+        """INIファイルの文字列値を適切な型に変換"""
+        # Noneまたは空文字列の場合
+        if value is None or value == "":
+            return None
 
-     # JSON文字列として解析を試みる
-     try:
-        return json.loads(value)
-     except json.JSONDecodeError:
-        pass
-
-     # 真偽値の判定
-     lower_val = value.lower()
-     if lower_val in ('true', 'yes', 'on', '1'):
-        return True
-     if lower_val in ('false', 'no', 'off', '0'):
-        return False
-
-     # 数値への変換
-     try:
-        return int(value)
-     except ValueError:
+        # JSON文字列として解析を試みる
         try:
-            return float(value)
+            return json.loads(value)
+        except json.JSONDecodeError:
+            pass
+
+        # 真偽値の判定
+        lower_val = value.lower()
+        if lower_val in ('true', 'yes', 'on', '1'):
+            return True
+        if lower_val in ('false', 'no', 'off', '0'):
+            return False
+
+        # 数値への変換
+        try:
+            return int(value)
         except ValueError:
-            return value
+            try:
+                return float(value)
+            except ValueError:
+                return value
+
     def set(self, section: str, key: str, value: Any) -> None:
         """設定値をINIファイルに保存可能な形式で設定"""
         if not self.config.has_section(section):
@@ -119,6 +118,16 @@ class ConfigManager:
         except Exception as e:
             logging.error(f"設定ファイル保存エラー: {str(e)}")
             raise
+
+    def reload(self) -> None:
+        """設定ファイルを再読み込みする"""
+        current_modified_time = self._get_modified_time()
+        if current_modified_time > self._last_modified:
+            self._load_config()
+            self._last_modified = current_modified_time
+            logging.info(f"設定ファイルを再読み込みしました: {self.config_file}")
+        else:
+            logging.info("設定ファイルに変更はありません")
 
     def __str__(self) -> str:
         """現在の設定内容を文字列で表現"""

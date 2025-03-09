@@ -207,6 +207,9 @@ class EnhancedContext(commands.Context):
 
     標準Contextに各種ユーティリティメソッドを追加。
     """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.interaction: Optional[discord.Interaction] = None  # インタラクション情報を保持
     @property
     def created_at(self) -> datetime.datetime:
         """メッセージの作成日時を返す"""
@@ -264,7 +267,21 @@ class EnhancedContext(commands.Context):
 
     async def paginate(self, data: List[T], **kwargs) -> Paginator[T]:
         """ページネーション表示を開始する"""
+
         return await Paginator.start(self, data, **kwargs)
+    @classmethod
+    async def from_interaction(cls, interaction: discord.Interaction) -> 'EnhancedContext':
+        """Interactionからコンテキストを生成"""
+        ctx = await cls.from_interaction(interaction)
+        ctx.interaction = interaction  # インタラクション情報を保持
+        return ctx
+
+    async def respond(self, *args, **kwargs) -> Optional[discord.Message]:
+        """インタラクション対応の応答メソッド"""
+        if self.interaction and not self.interaction.response.is_done():
+            await self.interaction.response.send_message(*args, **kwargs)
+            return await self.interaction.original_response()
+        return await super().send(*args, **kwargs)
 
 class ConfirmationView(EnhancedView):
     """拡張確認ダイアログ
