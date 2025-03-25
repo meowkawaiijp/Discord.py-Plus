@@ -1,70 +1,102 @@
-# Lumina Development
+# Discord.py-Plus
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
 [日本語](/README_JA.md)
 
-## Overview
-This is the official website for [Lumina Development](https://lumina-group.github.io/Lumina/). Our site introduces our group’s technology, products, team information, and contact details. We provide quantum-resistant encryption solutions.
+An enhanced framework for Discord.py with advanced features.
 
-## Features
-### Advanced Quantum-Resistant Technology
-- **Post-Quantum Cryptography**: Our encryption library implements lattice-based, hash-based, and multivariate-based algorithms that resist attacks from quantum computers, ensuring your data remains secure for decades to come.
-- **Python-First Development**: We offer an intuitive Python library with comprehensive documentation and examples, enabling developers of all skill levels to implement quantum-resistant encryption.
-- **End-to-End Encryption**: Our messaging solution provides end-to-end encryption to guarantee the privacy and security of your communications.
-- **Seamless Integration**: Designed as a drop-in replacement for conventional cryptographic functions, our solutions integrate smoothly with existing systems while minimizing implementation friction.
-- **Future-Proof Security**: Backed by continuous research and regular updates addressing newly discovered vulnerabilities, our ever-evolving security solutions stay ahead of emerging quantum threats.
+## 🚀 Key Features
 
-## Product Information
-### AQE
-AQE is our primary quantum-resistant encryption library for Python developers, offering an easy-to-use implementation of lattice-based encryption algorithms.
+- **Smart Pagination**  
+  Interactive page management for large datasets.
+- **Interactive Dialogs**  
+  Built-in confirmation dialogs and dynamic selection menus.
+- **Task Scheduler**  
+  Flexible scheduling of recurring tasks with custom timing.
+- **Extended Context**  
+  An extended Context class with additional utility methods.
+- **Configuration Management**  
+  .ini-based hot-reloadable configuration system.
+- **Extension System**  
+  Dynamic Cog loading with Jishaku integration.
 
-```python
-# just 3 lines to generate quantum-resistant encryption
-kex = QuantumSafeKEX()
-transport = SecureTransport(await kex.exchange(peer_awa)[0])
-encrypted = await transport.encrypt(your_data)
+## ⚙️ Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/meowkawaiijp/Discord.py-Plus.git
+cd Discord.py-Enhanced
 ```
 
-[GitHub Repository](https://github.com/Lumina-Group/AQE)
+2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
 
-### Encapsule (Coming Soon)
-Encapsule is an anonymous, secure messenger app designed for safe communication.
-- It provides a messaging experience far more anonymous than existing solutions, combining the smooth usability of Discord with our proprietary quantum-resistant encryption library (AQE).
+3. Run the bot
+```bash
+python bot.py
+```
 
-[GitHub Repository](https://github.com/Lumina-Group/Encapsule)
-
-### Alzam (Implementation Coming Soon)
-Our secure file storage solution protects your files using encryption that withstands quantum attacks.
-- Transparent client-side encryption is applied before data leaves your device.
-- Zero-knowledge architecture – our group never accesses your encryption keys.
-- Granular access controls and permission management.
-- Detailed audit logs that record all access attempts.
+## 💡 Basic Usage
 
 ```python
-from alzam import VaultClient
-client = VaultClient(api_key="your_api_key")
-financial_vault = client.create_vault("Financial Documents")
-financial_vault.store_file(
-    file_path="/path/to/tax_returns.pdf",
-    description="2024 Tax Returns",
-    tags=["taxes", "finance", "2024"]
+import asyncio
+import logging
+from core.Dispyplus import EnhancedBot
+from core.config import ConfigManager
+from core.decorators import log_execution
+from core.view import EnhancedContext
+import discord
+
+CONFIG_FILE = 'config.ini'
+
+config = ConfigManager(CONFIG_FILE)
+
+logging.basicConfig(
+    level=config.get('Logging', 'level', fallback='INFO'),
+    format='[%(asctime)s] %(levelname)s [%(name)s]: %(message)s',
+    handlers=[
+        logging.FileHandler(
+            filename=config.get('Logging', 'file', fallback='bot.log'),
+            encoding='utf-8', mode='a'
+        ),
+        logging.StreamHandler()
+    ]
 )
-tax_file = financial_vault.get_file("2024 Tax Returns")
-tax_file.save_to("/path/to/destination/")
+logger = logging.getLogger(__name__)
+
+intents = discord.Intents.all()
+bot = EnhancedBot(
+    command_prefix=config.get('Bot', 'prefix', fallback='!'),
+    intents=intents,
+    config=config
+)
+
+@bot.hybrid_command(name="ping", description="pong")
+@log_execution()
+async def ping(ctx: EnhancedContext):
+    await ctx.success(f"pong")
+
+async def main():
+    await bot.start(config.get('Bot', 'token'))
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-[GitHub Repository](https://github.com/Lumina-Group/alzam)
+## 🤝 Contributing
 
-## About the Group
-Lumina Development was established in 2025 by a team dedicated to developing quantum-resistant security solutions that are accessible to everyone in anticipation of the quantum computing era.
+1. Fork the repository.
+2. Create a feature branch  
+   `git checkout -b feature/new-feature`
+3. Commit your changes  
+   `git commit -m 'Add new feature'`
+4. Push the branch  
+   `git push origin feature/new-feature`
+5. Create a pull request.
 
-Currently, the project is led by its sole founder, but we are actively recruiting engineers and researchers who share our vision for a safer future.
+## 📜 License
 
-We aim to collaborate with talented individuals from diverse backgrounds to transform cutting-edge cryptographic technology into practical security solutions.
-
-## Contact
-- [Discord](https://discord.gg/y9TURVfVyb)
-- [X (Twitter)](https://x.com/Meowkawaii_jp)
-- [Email](mailto:example.example.1.mm@icloud.com)
-
-## License
-© 2025 Lumina Development. All rights reserved.
+Distributed under the MIT License. See the `LICENSE` file for details.
