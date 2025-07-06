@@ -49,17 +49,9 @@ confirmation dialogs, and more.
 
 ## ⚙️ Installation
 
-You can install Dispyplus using pip:
-
-```bash
-pip install dispyplus
-```
-
-Or, if you want the latest development version, you can install it directly from GitHub:
 ```bash
 pip install git+https://github.com/meowkawaiijp/dispyplus.git
 ```
-*(Note: Replace `yourusername/dispyplus.git` with the actual repository URL once it's finalized and public.)*
 
 ## 💡 Basic Usage
 
