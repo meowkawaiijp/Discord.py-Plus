@@ -63,156 +63,7 @@ class EnhancedView(discord.ui.View):
                 ephemeral=True
             )
 
-class Paginator(EnhancedView, Generic[T]):
-    def __init__(
-        self,
-        data: List[T],
-        per_page: int = 10,
-        embed_template: Optional[Callable[[List[T], int], discord.Embed]] = None,
-        button_style: discord.ButtonStyle = discord.ButtonStyle.primary,
-        timeout: float = 120,
-        owner_only: bool = False
-    ):
-        super().__init__(timeout=timeout)
-        self.data = data
-        self.per_page = max(1, per_page)  # 最低1項目／ページ
-        self.current_page = 0
-        self.embed_template = embed_template or self.default_embed
-        self.total_pages = max(1, (len(data) + per_page - 1) // per_page)
-        self.button_style = button_style
-        self.owner_id: Optional[int] = None
-        self.owner_only = owner_only
-
-        # ページ数が1ページのみの場合、操作用ボタンを非表示にする
-        if self.total_pages <= 1:
-            self.clear_items()
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """操作権限チェック
-
-        ・所有者限定の場合、操作できるユーザーを制限する
-        """
-        if self.owner_only and self.owner_id and interaction.user.id != self.owner_id:
-            await interaction.response.send_message("このページネーションを操作する権限がありません", ephemeral=True)
-            return False
-        return True
-
-    def default_embed(self, page_data: List[T], page: int) -> discord.Embed:
-        """デフォルトのEmbed生成処理
-
-        ・各ページのデータを文字列として結合し、Embedにセットする
-        """
-        embed = discord.Embed(
-            title=f"ページ {page + 1}/{self.total_pages}",
-            description="\n".join(str(item) for item in page_data),
-            color=discord.Color.blurple()
-        )
-        embed.set_footer(text=f"全 {len(self.data)} 項目")
-        return embed
-
-    def get_page_data(self, page: int) -> List[T]:
-        """指定ページのデータを抽出する"""
-        start = page * self.per_page
-        end = start + self.per_page
-        return self.data[start:end]
-
-    @discord.ui.button(emoji="⏪", style=discord.ButtonStyle.secondary)
-    async def first_page(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """最初のページへ移動するボタンの処理"""
-        if self.current_page == 0:
-            await interaction.response.defer()
-            return
-        self.current_page = 0
-        await self._update_view(interaction)
-
-    @discord.ui.button(emoji="◀️", style=discord.ButtonStyle.primary)
-    async def prev_page(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """前のページへ移動するボタンの処理"""
-        if self.current_page == 0:
-            await interaction.response.defer()
-            return
-        self.current_page = max(0, self.current_page - 1)
-        await self._update_view(interaction)
-
-    @discord.ui.button(emoji="▶️", style=discord.ButtonStyle.primary)
-    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """次のページへ移動するボタンの処理"""
-        if self.current_page >= self.total_pages - 1:
-            await interaction.response.defer()
-            return
-        self.current_page = min(self.total_pages - 1, self.current_page + 1)
-        await self._update_view(interaction)
-
-    @discord.ui.button(emoji="⏩", style=discord.ButtonStyle.secondary)
-    async def last_page(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """最後のページへ移動するボタンの処理"""
-        if self.current_page >= self.total_pages - 1:
-            await interaction.response.defer()
-            return
-        self.current_page = self.total_pages - 1
-        await self._update_view(interaction)
-
-    async def _update_view(self, interaction: discord.Interaction):
-        """内部処理：ページ更新時のEmbedおよびボタン状態の更新"""
-        try:
-            # ボタンの有効/無効状態を更新
-            self.first_page.disabled = self.current_page == 0
-            self.prev_page.disabled = self.current_page == 0
-            self.next_page.disabled = self.current_page >= self.total_pages - 1
-            self.last_page.disabled = self.current_page >= self.total_pages - 1
-
-            if interaction.response.is_done():
-                await interaction.followup.edit_message(
-                    message_id=self.message.id,
-                    embed=self.embed_template(self.get_page_data(self.current_page), self.current_page),
-                    view=self
-                )
-            else:
-                await interaction.response.edit_message(
-                    embed=self.embed_template(self.get_page_data(self.current_page), self.current_page),
-                    view=self
-                )
-        except discord.HTTPException as e:
-            logging.error(f"Paginator update error: {e}")
-
-    @classmethod
-    async def start(
-        cls, 
-        destination: Union[commands.Context, discord.Interaction], 
-        *args, 
-        **kwargs
-    ) -> 'Paginator[T]':
-        """ページネーターの初期表示を行い、開始する
-
-        ・送信先（ContextまたはInteraction）にEmbedとUIを送信  
-        ・送信先のユーザーを所有者として設定
-        """
-        instance = cls(*args, **kwargs)
-        page_data = instance.get_page_data(0)
-        embed = instance.embed_template(page_data, 0)
-
-        # 最初のページでは前へ移動ボタンを無効化
-        instance.first_page.disabled = True
-        instance.prev_page.disabled = True
-
-        # 1ページのみの場合は次へ移動ボタンも無効化
-        if instance.total_pages <= 1:
-            instance.next_page.disabled = True
-            instance.last_page.disabled = True
-
-        # 所有者の設定と送信処理
-        if isinstance(destination, commands.Context):
-            instance.owner_id = destination.author.id
-            instance.message = await destination.send(embed=embed, view=instance)
-        elif isinstance(destination, discord.Interaction):
-            instance.owner_id = destination.user.id
-            if destination.response.is_done():
-                instance.message = await destination.followup.send(embed=embed, view=instance)
-            else:
-                await destination.response.send_message(embed=embed, view=instance)
-                instance.message = await destination.original_response()
-
-        return instance
+# Paginator class definition was here. It will be moved to dispyplus/ui.py
 class EnhancedContext(commands.Context):
     """
     An enhanced version of `discord.ext.commands.Context`.
@@ -318,10 +169,62 @@ class EnhancedContext(commands.Context):
         )
         return await self.send(embed=embed, **kwargs)
 
-    async def ask(self, message: str, **kwargs) -> Optional[bool]:
-        """確認ダイアログを表示し、ユーザーの選択結果を待機する"""
-        view = ConfirmationView(require_original_user=True)
-        return await view.ask(self, message, **kwargs)
+    async def ask(self, message: str, *, timeout: float = 180.0, interaction_check: Optional[Callable[[discord.Interaction], Awaitable[bool]]] = None, embed_color: discord.Color = discord.Color.gold(), **kwargs) -> Optional[bool]:
+        """
+        `dispyplus.ui.ConfirmationView` を使用して確認プロンプトを表示します。
+
+        Args:
+            message (str): 確認メッセージの本文。
+            timeout (float, optional): ビューがタイムアウトするまでの秒数。デフォルトは180.0。
+            interaction_check (Optional[Callable[[discord.Interaction], Awaitable[bool]]], optional):
+                インタラクションを処理するかどうかを決定するカスタムチェック関数。
+                デフォルトはNoneで、元のコマンド発行者のみが操作可能です。
+            embed_color (discord.Color, optional): 確認メッセージのEmbedの色。デフォルトは `discord.Color.gold()`。
+            **kwargs: `ctx.send()` や `interaction.response.send_message()` に渡される追加のキーワード引数。
+                      (例: `ephemeral=True`)
+
+        Returns:
+            Optional[bool]: ユーザーが「はい」を選択した場合はTrue、「いいえ」の場合はFalse、
+                            タイムアウトまたはその他の理由で応答がなかった場合はNone。
+        """
+        # dispyplus.ui から ConfirmationView をインポート
+        # このファイルのトップレベルでのインポートは循環参照を避けるために行わない
+        from .ui import ConfirmationView as DispyplusConfirmationView
+
+        view = DispyplusConfirmationView(timeout=timeout, interaction_check=interaction_check)
+        view.set_original_user_id(self.author.id)
+
+        embed = discord.Embed(description=f"❓ {message}", color=embed_color)
+
+        msg_to_edit: Optional[discord.Message] = None
+        # ephemeral は kwargs から取得し、指定がなければ False にフォールバック
+        ephemeral = kwargs.pop('ephemeral', False)
+
+        if self.interaction and not self.interaction.response.is_done():
+            # interaction.response.send_message は ephemeral を取る
+            await self.interaction.response.send_message(embed=embed, view=view, ephemeral=ephemeral, **kwargs)
+            msg_to_edit = await self.interaction.original_response()
+        else:
+            # ctx.send は ephemeral を直接は取らないが、kwargs経由で渡されるものは通常無視されるか、
+            # discord.pyの send の実装に依存する。
+            # ここでは意図しない引数エラーを避けるため、ephemeral を直接渡さない。
+            # もしメッセージコマンドで ephemeral のような挙動が必要な場合は別途検討が必要。
+            msg_to_edit = await self.send(embed=embed, view=view, **kwargs)
+
+        await view.wait()
+
+        # view.stop() の中でボタンは無効化されているので、メッセージの編集は不要な場合が多い。
+        # (ConfirmationViewが interaction.response.edit_message(view=self) を呼んでいるため)
+        # もし、ビューを完全にメッセージから取り除きたい場合は以下のようにする:
+        # if msg_to_edit:
+        #     try:
+        #         await msg_to_edit.edit(view=None)
+        #     except discord.NotFound:
+        #         pass
+        #     except discord.HTTPException as e:
+        #         self.bot.logger.warning(f"Failed to remove view from message after ask: {e}")
+
+        return view.value
 
     async def paginate(self, data: List[T], **kwargs) -> Paginator[T]:
         """ページネーション表示を開始する"""
@@ -365,66 +268,8 @@ class EnhancedContext(commands.Context):
             return await self.interaction.original_response()
         return await super().send(*args, **kwargs)
 
-class ConfirmationView(EnhancedView):
-    """拡張確認ダイアログ
-
-    ユーザーに対し、確認（はい/いいえ）の選択を促すUIを提供する。
-    """
-    def __init__(self, **kwargs):
-        super().__init__(timeout=kwargs.get('timeout', 30))
-        self.require_original_user = kwargs.get('require_original_user', True)
-        self.original_user: Optional[discord.User] = None
-        self.value: Optional[bool] = None
-        self.custom_labels = kwargs.get('custom_labels', {})
-        # ボタンラベルのカスタマイズ
-        self.confirm_label = self.custom_labels.get('confirm', "はい")
-        self.cancel_label = self.custom_labels.get('cancel', "いいえ")
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """確認ダイアログの操作権限チェック
-
-        ・オリジナルユーザー以外の操作を拒否する
-        """
-        if self.require_original_user and interaction.user != self.original_user:
-            await interaction.response.send_message("この操作は実行できません", ephemeral=True)
-            return False
-        return True
-
-    @discord.ui.button(style=discord.ButtonStyle.green)
-    async def confirm_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """確認ボタンの処理"""
-        button.label = self.confirm_label
-        self.value = True
-        await interaction.response.defer()
-        self.stop()
-
-    @discord.ui.button(style=discord.ButtonStyle.red)
-    async def cancel_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """キャンセルボタンの処理"""
-        button.label = self.cancel_label
-        self.value = False
-        await interaction.response.defer()
-        self.stop()
-
-    async def ask(self, ctx: EnhancedContext, message: str, **kwargs) -> Optional[bool]:
-        """確認ダイアログを表示し、ユーザーの選択結果を返す"""
-        self.original_user = ctx.author
-        # ボタンラベルの再設定（必要な場合）
-        self.confirm_button.label = self.confirm_label
-        self.cancel_button.label = self.cancel_label
-        embed = discord.Embed(
-            description=f"❓ {message}",
-            color=discord.Color.gold()
-        )
-        self.message = await ctx.send(embed=embed, view=self, **kwargs)
-        await self.wait()
-        try:
-            if self.message:
-                await self.message.edit(view=None)
-        except discord.NotFound:
-            pass
-        return self.value
-
+# ConfirmationView is now expected to be imported from dispyplus.ui
+# The old ConfirmationView class that was here has been removed.
 
 class TimeoutSelect(discord.ui.Select):
     """タイムアウト付きセレクトメニュー
