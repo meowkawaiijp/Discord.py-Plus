@@ -4,7 +4,18 @@ import logging
 from typing import Optional, List, Union, Callable, TypeVar, Generic, cast
 import discord
 from discord.ext import commands
+from enum import Enum, auto
+
 T = TypeVar('T')
+
+class InteractionType(Enum):
+    """インタラクションの種類を示す列挙型です。
+    EnhancedContext.interaction_type で使用されます。
+    """
+    UNKNOWN = auto() #: 不明なインタラクションタイプ。
+    SLASH_COMMAND = auto() #: スラッシュコマンドまたはコンテキストメニューコマンド。
+    MESSAGE_COMPONENT = auto() #: ボタン、選択メニューなどのメッセージコンポーネント。
+    MODAL_SUBMIT = auto() #: モーダル送信。
 
 
 class EnhancedView(discord.ui.View):
@@ -209,7 +220,34 @@ class EnhancedContext(commands.Context):
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.interaction: Optional[discord.Interaction] = None  # インタラクション情報を保持
+        # The 'interaction' attribute is already provided by discord.py's Context
+        # when the context is created from an interaction.
+        # We just need to ensure our EnhancedContext correctly utilizes it.
+        # self.interaction: Optional[discord.Interaction] = kwargs.get('interaction')
+
+    @property
+    def interaction_type(self) -> InteractionType:
+        """
+        現在のコンテキストがどの種類のインタラクションから生成されたかを返します。
+        インタラクションでない場合 (通常のメッセージコマンドなど) は UNKNOWN を返します。
+
+        Returns:
+            InteractionType: インタラクションの種類。
+        """
+        if self.interaction:
+            if self.interaction.type == discord.InteractionType.application_command:
+                # Further check if it's a slash command or context menu command
+                # For now, we'll broadly classify as SLASH_COMMAND
+                return InteractionType.SLASH_COMMAND
+            elif self.interaction.type == discord.InteractionType.message_component:
+                return InteractionType.MESSAGE_COMPONENT
+            elif self.interaction.type == discord.InteractionType.modal_submit:
+                return InteractionType.MODAL_SUBMIT
+            # Add more specific checks if needed, e.g., for autocomplete
+            # elif self.interaction.type == discord.InteractionType.application_command_autocomplete:
+            #     return InteractionType.AUTOCOMPLETE
+        return InteractionType.UNKNOWN
+
     @property
     def created_at(self) -> datetime.datetime:
         """メッセージの作成日時を返す"""
@@ -269,12 +307,36 @@ class EnhancedContext(commands.Context):
         """ページネーション表示を開始する"""
 
         return await Paginator.start(self, data, **kwargs)
-    @classmethod
-    async def from_interaction(cls, interaction: discord.Interaction) -> 'EnhancedContext':
-        """Interactionからコンテキストを生成"""
-        ctx = await cls.from_interaction(interaction)
-        ctx.interaction = interaction  # インタラクション情報を保持
-        return ctx
+
+    # discord.py 2.0+ Context.from_interaction is a staticmethod
+    # We don't need to override from_interaction if the base class already sets .interaction
+    # If we needed to customize context creation from an interaction, we would do it here.
+    # For now, the default behavior of commands.Context.from_interaction should suffice
+    # as it correctly populates the `interaction` attribute.
+
+    # @classmethod
+    # async def from_interaction(cls, interaction: discord.Interaction) -> 'EnhancedContext':
+    #     """Interactionからコンテキストを生成"""
+    #     # Call the superclass's from_interaction
+    #     # ctx = await super().from_interaction(interaction) # This is not how it works.
+    #     # The bot calls Bot.get_context, which then might call super().get_context
+    #     # or directly commands.Context(interaction=interaction, ...)
+    #     # For hybrid commands, ctx.interaction is automatically populated.
+    #
+    #     # We need to ensure that when the bot creates a context from an interaction,
+    #     # it uses EnhancedContext. If it does, self.interaction will be set.
+    #     # The bot's get_context method is already overridden to use EnhancedContext.
+    #     # So, this explicit from_interaction might not be necessary unless we want to
+    #     # add more custom logic during the creation from an interaction object directly.
+    #
+    #     # If this method were to be used, it should be:
+    #     # context = await commands.Context.from_interaction(interaction) # Get a base context
+    #     # enhanced_context = cls(message=context.message, bot=context.bot, view=context.view, interaction=interaction)
+    #     # return enhanced_context
+    #     # However, this is not the standard way. Bot.get_context is the main entry point.
+    #     # Let's assume the base class or bot.get_context handles interaction assignment.
+    #     pass
+
 
     async def respond(self, *args, **kwargs) -> Optional[discord.Message]:
         """インタラクション対応の応答メソッド"""
@@ -409,6 +471,15 @@ class InteractiveSelect(EnhancedView):
         except discord.NotFound:
             pass
         return self.selected_value
+
+    async def send_webhook(self, url: str, *args, **kwargs) -> Optional[discord.Message]:
+        """
+        このコンテキストに関連するBotインスタンスを使用してWebhookを送信します。
+        引数は EnhancedBot.send_webhook と同じです。
+        """
+        if not hasattr(self.bot, 'send_webhook'):
+            raise AttributeError("The bot instance does not have a 'send_webhook' method. Ensure you are using EnhancedBot.")
+        return await self.bot.send_webhook(url, *args, **kwargs) # type: ignore
 
 
 class AdvancedSelect(EnhancedView):
