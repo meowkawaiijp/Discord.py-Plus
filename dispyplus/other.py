@@ -214,9 +214,29 @@ class Paginator(EnhancedView, Generic[T]):
 
         return instance
 class EnhancedContext(commands.Context):
-    """拡張コンテキストクラス
+    """
+    An enhanced version of `discord.ext.commands.Context`.
 
-    標準Contextに各種ユーティリティメソッドを追加。
+    This class provides additional utility methods and properties to simplify
+    common bot interactions and responses. It is intended to be used as the
+    default context type by `DispyplusBot`.
+
+    Properties:
+        interaction_type (InteractionType): Determines how the command was invoked
+            (e.g., slash command, message component).
+        created_at (datetime.datetime): The creation time of the original message.
+        is_dm (bool): True if the context is in a DM channel, False otherwise.
+
+    Methods:
+        success(message, **kwargs): Sends an embed-styled success message.
+        warning(message, **kwargs): Sends an embed-styled warning message.
+        error(message, **kwargs): Sends an embed-styled error message.
+        info(message, **kwargs): Sends an embed-styled informational message.
+        unknown(message, **kwargs): Sends an embed-styled message for unknown states.
+        ask(message, **kwargs): Prompts the user with a yes/no confirmation dialog.
+        paginate(data, **kwargs): Starts a paginator UI for the given data.
+        respond(*args, **kwargs): Sends a response, handling interactions appropriately.
+        send_webhook(url, *args, **kwargs): Sends a message via webhook using the bot instance.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

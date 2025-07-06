@@ -5,6 +5,27 @@ import json
 from typing import Any, Optional
 
 class ConfigManager:
+    """
+    Manages application configuration using an INI file.
+
+    This class handles reading from and writing to an INI configuration file.
+    It supports automatic type conversion for common types (int, float, bool, JSON)
+    and can hot-reload the configuration if the file is modified.
+
+    Args:
+        config_file (str, optional): The path to the configuration INI file.
+            Defaults to 'config.ini'. If the file does not exist, it will be created.
+
+    Attributes:
+        config_file (str): Absolute path to the configuration file.
+        config (configparser.ConfigParser): The underlying ConfigParser instance.
+
+    Methods:
+        get(section, key, fallback=None): Retrieves a configuration value, converting its type.
+        set(section, key, value): Sets a configuration value, converting it to a string.
+        save(): Saves the current configuration to the file.
+        reload(): Reloads the configuration from the file if it has been modified.
+    """
     def __init__(self, config_file: str = 'config.ini'):
         self.config_file = os.path.abspath(config_file)
         self.config = configparser.ConfigParser()
