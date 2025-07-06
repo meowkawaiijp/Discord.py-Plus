@@ -21,8 +21,8 @@ confirmation dialogs, and more.
     - Jishaku integration support.
 - **Extended Context (`EnhancedContext`)**:
     - Utility methods for sending styled messages: `.success()`, `.error()`, `.warning()`, `.info()`.
-    - Interactive dialogs: `.ask()` for confirmations.
-    - Pagination: `.paginate()` using `Paginator` class.
+    - Interactive dialogs: `.ask()` for confirmations (uses `dispyplus.ui.ConfirmationView`).
+    - Pagination: `.paginate()` using `dispyplus.ui.Paginator`.
     - Property to check interaction type: `.interaction_type`.
     - Helper to send webhooks: `.send_webhook()`.
 - **Custom Event System**:
@@ -39,11 +39,14 @@ confirmation dialogs, and more.
     - `@permission_check`: Easily check for user permissions or roles.
     - `@log_execution`: Log command execution details.
 - **UI Components**:
-    - `EnhancedView`: Base view with built-in timeout handling and component disabling.
-    - `Paginator`: For creating paginated embeds.
-    - `ConfirmationView`: Simple Yes/No confirmation dialogs.
-    - `InteractiveSelect`: Select menus that return user's choice.
-    - `AdvancedSelect`: Select menus with pagination for many options.
+    - Leverages `discord.ui` for modern UI elements like buttons, select menus, and modals.
+    - All new UI components are located in the `dispyplus.ui` module:
+    - `EnhancedView`: Base view with built-in timeout handling and component disabling, serving as a foundation for other UI elements.
+    - `ConfirmationView` (in `dispyplus.ui`): Simple Yes/No confirmation dialogs using `discord.ui.Button`.
+    - `Paginator` (in `dispyplus.ui`): For creating paginated embeds with button navigation.
+    - `PaginatedSelectView` (in `dispyplus.ui`): A select menu with built-in pagination for handling a large number of options.
+    - `SimpleSelectView` (in `dispyplus.ui`): A straightforward select menu for a predefined list of options.
+    - (Note: Older UI components previously in `dispyplus.other` have been removed or migrated to `dispyplus.ui`.)
 - **Webhook Utility**:
   - `DispyplusBot.send_webhook()` and `EnhancedContext.send_webhook()` for easy webhook message sending.
 
@@ -141,7 +144,8 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-For more detailed examples, including all custom event decorators and UI components, please refer to the `example/simple_example.py` file in the repository.
+For more detailed examples, including custom event decorators and various UI components (`discord.ui` based examples like buttons, selects, modals),
+please refer to the `example/simple_example.py` and `example/ui_example.py` files in the repository.
 
 ## 🔧 Configuration (`config.ini`)
 

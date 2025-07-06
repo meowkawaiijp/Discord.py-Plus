@@ -18,8 +18,8 @@ Dispyplusは、discord.pyを使用したDiscordボット開発を強化するた
     - Jishaku統合サポート。
 - **拡張コンテキスト (`EnhancedContext`)**:
     - スタイル付きメッセージ送信ユーティリティメソッド: `.success()`, `.error()`, `.warning()`, `.info()`。
-    - 対話型ダイアログ: 確認用の `.ask()`。
-    - ページネーション: `Paginator` クラスを使用した `.paginate()`。
+    - 対話型ダイアログ: 確認用の `.ask()` (`dispyplus.ui.ConfirmationView` を使用)。
+    - ページネーション: `dispyplus.ui.Paginator` を使用した `.paginate()`。
     - インタラクションタイプ確認プロパティ: `.interaction_type`。
     - Webhook送信ヘルパー: `.send_webhook()`。
 - **カスタムイベントシステム**:
@@ -36,11 +36,14 @@ Dispyplusは、discord.pyを使用したDiscordボット開発を強化するた
     - `@permission_check`: ユーザー権限やロールを簡単にチェック。
     - `@log_execution`: コマンド実行詳細をログ記録。
 - **UIコンポーネント**:
-    - `EnhancedView`: タイムアウト処理とコンポーネント無効化機能が組み込まれたベースビュー。
-    - `Paginator`: ページ分割されたEmbed作成用。
-    - `ConfirmationView`: 簡単な はい/いいえ 確認ダイアログ。
-    - `InteractiveSelect`: ユーザーの選択を返すセレクトメニュー。
-    - `AdvancedSelect`: 多数の選択肢に対応したページネーション付きセレクトメニュー。
+    - `discord.ui` を活用し、ボタン、セレクトメニュー、モーダルなどのモダンなUI要素を提供。
+    - 新しいUIコンポーネントはすべて `dispyplus.ui` モジュールに配置:
+    - `EnhancedView`: タイムアウト処理とコンポーネント無効化機能が組み込まれ、他のUI要素の基盤となるベースビュー。
+    - `ConfirmationView` (`dispyplus.ui` 内): `discord.ui.Button` を使用した簡単な はい/いいえ 確認ダイアログ。
+    - `Paginator` (`dispyplus.ui` 内): ボタンナビゲーション付きのページ分割されたEmbed作成用。
+    - `PaginatedSelectView` (`dispyplus.ui` 内): 多数の選択肢を扱うためのページネーション機能が組み込まれたセレクトメニュー。
+    - `SimpleSelectView` (`dispyplus.ui` 内): 事前定義された選択肢リストのためのシンプルなセレクトメニュー。
+    - (注意: `dispyplus.other` にあった古いUIコンポーネントは削除されたか、`dispyplus.ui` に移行されました。)
 - **Webhookユーティリティ**:
   - `DispyplusBot.send_webhook()` および `EnhancedContext.send_webhook()` による簡単なWebhookメッセージ送信。
 
@@ -132,7 +135,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-全てのカスタムイベントデコレータやUIコンポーネントを含むより詳細な例については、リポジトリの `example/simple_example.py` ファイルを参照してください。
+全てのカスタムイベントデコレータや、様々なUIコンポーネント（ボタン、セレクトメニュー、モーダルなどの `discord.ui` ベースの例）を含むより詳細な例については、リポジトリの `example/simple_example.py` および `example/ui_example.py` ファイルを参照してください。
 
 ## 🔧 設定 (`config.ini`)
 

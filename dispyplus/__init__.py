@@ -34,11 +34,12 @@ from .other import (
     EnhancedContext,
     EnhancedView,
     Paginator,
-    ConfirmationView,
+    # ConfirmationView, # Removed from here
     InteractiveSelect,
     AdvancedSelect,
     InteractionType,
 )
+from .ui import ConfirmationView # Added import from .ui
 
 __all__ = [
     "DispyplusBot",
