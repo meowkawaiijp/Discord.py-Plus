@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Optional
 import discord
 from discord.ext import commands
 from discord import app_commands, ui # discord.ui をインポート
@@ -56,18 +57,12 @@ class UISampleCog(commands.Cog):
         if confirmed is None:
             # ask の中でタイムアウトメッセージを編集するか、ここで followup で送る
             # 現状の ConfirmationView はタイムアウト時にメッセージを編集するため、ここでは不要かもしれない
-            await ctx.followup.send("確認がタイムアウトしました。", ephemeral=True) # followup を使用
+            await ctx.send("確認がタイムアウトしました。", ephemeral=True) # followup を使用
         elif confirmed:
-            await ctx.followup.send("操作が確認されました！", ephemeral=True) # followup を使用
+            await ctx.send("操作が確認されました！", ephemeral=True) # followup を使用
         else:
-            await ctx.followup.send("操作はキャンセルされました。", ephemeral=True) # followup を使用
+            await ctx.send("操作はキャンセルされました。", ephemeral=True) # followup を使用
 
-    # --- discord.ui.Select を使ったサンプル ---
-    class SimpleSelectView(discord.ui.View):
-        elif confirmed:
-            await ctx.respond("操作が確認されました！", ephemeral=True)
-        else:
-            await ctx.respond("操作はキャンセルされました。", ephemeral=True)
 
     # --- discord.ui.Select を使ったサンプル ---
     class SimpleSelectView(discord.ui.View):
@@ -201,7 +196,7 @@ class UISampleCog(commands.Cog):
 
         # dispyplus.ui.PaginatedSelectView をインポート
         # EnhancedContext にヘルパーメソッドを追加するのも良い
-        from dispyplus import PaginatedSelectView # dispyplus から直接インポート
+        from dispyplus.ui import PaginatedSelectView # dispyplus から直接インポート
 
         view = PaginatedSelectView(
             options=options,
@@ -240,7 +235,7 @@ class UISampleCog(commands.Cog):
             discord.SelectOption(label="黄色", value="yellow", emoji="🟡"),
         ]
 
-        from dispyplus import SimpleSelectView # dispyplus から直接インポート
+        from dispyplus.ui import SimpleSelectView # dispyplus から直接インポート
 
         view = SimpleSelectView(
             options=options,

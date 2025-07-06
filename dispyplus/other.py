@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 import logging
-from typing import Optional, List, Union, Callable, TypeVar, Generic, cast
+from typing import Awaitable, Optional, List, Union, Callable, TypeVar, Generic, cast
 import discord
 from discord.ext import commands
 from enum import Enum, auto
@@ -226,10 +226,7 @@ class EnhancedContext(commands.Context):
 
         return view.value
 
-    async def paginate(self, data: List[T], **kwargs) -> Paginator[T]:
-        """ページネーション表示を開始する"""
 
-        return await Paginator.start(self, data, **kwargs)
 
     # discord.py 2.0+ Context.from_interaction is a staticmethod
     # We don't need to override from_interaction if the base class already sets .interaction

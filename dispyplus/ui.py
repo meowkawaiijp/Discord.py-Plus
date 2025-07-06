@@ -1,3 +1,4 @@
+import logging
 import discord
 from discord import ui
 from typing import Optional, Callable, Awaitable, List, Any, Generic, TypeVar
@@ -49,11 +50,12 @@ class ConfirmationView(EnhancedView):
         self._interaction_check_func = interaction_check
         self._original_user_id: Optional[int] = None
         self.message: Optional[discord.Message] = None # To store the message
+        self.view = self  # Ensure view is set for EnhancedView compatibility
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         # Logger access might not be available if EnhancedView fallback is used and bot instance isn't passed
         # For simplicity, direct print or basic logging for now if self.bot is not available.
-        logger = getattr(self.view.bot, "logger", None) if hasattr(self.view, "bot") else discord.utils.get_logger()
+        logger = getattr(self.view.bot, "logger", None) if hasattr(self.view, "bot") else logging.getLogger(self.__class__.__name__)
 
 
         if self._original_user_id is None and not self._interaction_check_func:
