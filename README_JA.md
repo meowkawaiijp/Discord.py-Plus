@@ -46,17 +46,9 @@ Dispyplusは、discord.pyを使用したDiscordボット開発を強化するた
 
 ## ⚙️ インストール
 
-pipを使用してDispyplusをインストールできます:
-
 ```bash
-pip install dispyplus
+pip install git+https://github.com/meowkawaiijp/dispyplus.git
 ```
-
-最新の開発版をインストールしたい場合は、GitHubから直接インストールできます:
-```bash
-pip install git+https://github.com/yourusername/dispyplus.git
-```
-*(注意: `yourusername/dispyplus.git` は、リポジトリが最終化され公開された後、実際のURLに置き換えてください。)*
 
 ## 💡 基本的な使い方
 
