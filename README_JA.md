@@ -1,101 +1,178 @@
-# Discord.py-Plus
+# Dispyplus (Discord.py-Plus)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI version](https://badge.fury.io/py/dispyplus.svg)](https://badge.fury.io/py/dispyplus) <!-- PyPIに公開後有効化 -->
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-高度な機能を備えたDiscord.py拡張フレームワーク
+[English](/README.md)
+
+Dispyplusは、discord.pyを使用したDiscordボット開発を強化するための様々な拡張機能やユーティリティを提供するPythonライブラリです。設定管理、カスタムイベント処理、ページネーターや確認ダイアログのようなUIコンポーネントなど、一般的なタスクを簡素化します。
 
 ## 🚀 主な機能
 
-- **スマートページネーション**
-  大規模データのインタラクティブなページ管理
-- **対話型ダイアログ**
-  確認ダイアログと動的選択メニューの内蔵
-- **タスクスケジューラー**
-  柔軟なタイミング設定による定期タスク実行
-- **拡張コンテキスト**
-  ユーティリティメソッド (`.success()`, `.error()`, `.ask()`, `.paginate()`, `.interaction_type` 等) を追加した拡張Contextクラス
-- **カスタムイベントデコレータ**
-  メッセージ内容、リアクション、ボイスステート変化など、特定のイベントに対するハンドラをデコレータ (`@on_message_contains`, `@on_reaction_add` 等) を使って簡単に作成
-- **Webhookユーティリティ**
-  Webhook経由でメッセージを簡単に送信できるヘルパーメソッド (`bot.send_webhook()` または `ctx.send_webhook()`)
-- **設定管理**
-  ホットリロード可能な.ini形式設定システム
-- **拡張機能システム**
-  Jishaku連携による動的なCog読み込み
+- **拡張ボットクラス (`DispyplusBot`)**:
+    - ホットリロード対応の統合設定管理 (`ConfigManager`)。
+    - ロギングの自動セットアップ。
+    - タスクスケジューリング機能。
+    - 動的な拡張機能 (Cog) 読み込み。
+    - Jishaku統合サポート。
+- **拡張コンテキスト (`EnhancedContext`)**:
+    - スタイル付きメッセージ送信ユーティリティメソッド: `.success()`, `.error()`, `.warning()`, `.info()`。
+    - 対話型ダイアログ: 確認用の `.ask()`。
+    - ページネーション: `Paginator` クラスを使用した `.paginate()`。
+    - インタラクションタイプ確認プロパティ: `.interaction_type`。
+    - Webhook送信ヘルパー: `.send_webhook()`。
+- **カスタムイベントシステム**:
+    - カスタムイベントタイプを管理・ディスパッチする `CustomEventManager`。
+    - 条件ベースフィルタリング付きの一般的なDiscordイベント用デコレータ:
+        - `@on_message_contains`: メッセージ内容に部分文字列が含まれる場合に発火。
+        - `@on_message_matches`: メッセージ内容が正規表現にマッチする場合に発火。
+        - `@on_reaction_add` / `@on_reaction_remove`: 特定のリアクション用。
+        - `@on_typing_in` / `@on_user_typing`: チャンネル/ユーザーのタイピングイベント用。
+        - `@on_user_voice_join` / `@on_user_voice_leave` / `@on_user_voice_move`: ボイスステート変更用。
+        - `@on_member_nickname_update`, `@on_member_role_add` / `@on_member_role_remove`, `@on_member_status_update`: メンバー更新用。
+        - `@on_guild_name_change`, `@on_guild_owner_change`: サーバー更新用。
+- **便利なデコレータ**:
+    - `@permission_check`: ユーザー権限やロールを簡単にチェック。
+    - `@log_execution`: コマンド実行詳細をログ記録。
+- **UIコンポーネント**:
+    - `EnhancedView`: タイムアウト処理とコンポーネント無効化機能が組み込まれたベースビュー。
+    - `Paginator`: ページ分割されたEmbed作成用。
+    - `ConfirmationView`: 簡単な はい/いいえ 確認ダイアログ。
+    - `InteractiveSelect`: ユーザーの選択を返すセレクトメニュー。
+    - `AdvancedSelect`: 多数の選択肢に対応したページネーション付きセレクトメニュー。
+- **Webhookユーティリティ**:
+  - `DispyplusBot.send_webhook()` および `EnhancedContext.send_webhook()` による簡単なWebhookメッセージ送信。
 
 ## ⚙️ インストール
 
-1.  リポジトリをクローンします:
-    ```bash
-    git clone https://github.com/meowkawaiijp/Discord.py-Plus.git
-    cd Discord.py-Plus
-    ```
-    注意: クローンURLのディレクトリ名は `Discord.py-Plus` ですが、ローカルで名前を変更した場合は `cd` コマンドを適宜調整してください。
+pipを使用してDispyplusをインストールできます:
 
-2.  必要なライブラリをインストールします:
-    ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+pip install dispyplus
+```
 
-3.  ボットを設定します:
-    *   `config.ini.example` を `config.ini` にリネーム（またはコピー）します。
-    *   `config.ini` を編集し、`[Bot]` セクションにボットトークンを追加します:
-        ```ini
-        [Bot]
-        token = あなたのボットトークンをここに
-        prefix = !
-        ```
-    *   必要に応じて他の設定も調整してください。
-
-4.  ボットを起動します:
-    デフォルトでは、新機能を含むメインのサンプルを実行できます:
-    ```bash
-    python example/simple_example.py
-    ```
-    もし古いバージョンのこのREADMEで言及されていたようなメインの `bot.py` を使用している場合は、それが更新されていることを確認するか、上記のサンプルを使用してください。
+最新の開発版をインストールしたい場合は、GitHubから直接インストールできます:
+```bash
+pip install git+https://github.com/yourusername/dispyplus.git
+```
+*(注意: `yourusername/dispyplus.git` は、リポジトリが最終化され公開された後、実際のURLに置き換えてください。)*
 
 ## 💡 基本的な使い方
 
-リポジトリ内の `example/simple_example.py` ファイルが大幅に更新されました。このファイルは、新しく追加されたイベントデコレータやユーティリティを含む、Discord.py-Plusのさまざまな機能を使用するための包括的なガイドとして機能します。
+`DispyplusBot` とその機能の簡単な使用例です:
 
-**実践的な実装詳細と実行可能なコードについては、`example/simple_example.py` ファイルを参照することを強くお勧めします。**
+```python
+import asyncio
+import discord
+from discord.ext import commands # commands.Cog をインポートするために追加
+from dispyplus import DispyplusBot, EnhancedContext, on_message_contains
 
-`simple_example.py` ファイルでは、元のシンプルな `ping` コマンドやロガー設定はそのままに、以下の内容が示されています：
+# Intentsの設定
+intents = discord.Intents.default()
+intents.message_content = True # メッセージ内容関連のイベント/コマンドに必要
+intents.members = True       # メンバー関連のイベントに役立つことが多い
 
-*   **`EnhancedBot` の初期化**: `config.ini` から設定を読み込むための `ConfigManager` と、必要なDiscordインテントを使用して `EnhancedBot` をセットアップする方法。
-*   **ハイブリッドコマンド**: 基本的な `ping` ハイブリッドコマンドと、メッセージを削除する前に `ctx.ask()` を使用してユーザー確認を行う改良版 `purge` ハイブリッドコマンド。インタラクティブなダイアログの使用例です。
-*   **`ExampleCog`**: `simple_example.py` 内にサンプルCogクラスが定義されています。このCogはボットによって読み込まれ、新しいカスタムイベントデコレータを整理して使用する明確な例を提供します：
-    *   **`@on_message_contains`**: このデコレータが付いたメソッドは、メッセージに特定のサブストリング（例: "hello example"）が含まれている場合にトリガーされ、応答します。
-    *   **`@on_reaction_add`**: 別のメソッドは、特定の絵文字リアクション（例: "👍"）がメッセージに追加されたときに動作します。
-    *   **`@on_user_voice_join`**: ある関数例では、ユーザーが任意のボイスチャンネルに参加したときにログを記録したりアナウンスしたりします。
-*   **Webhookユーティリティ**: `webhooktest` ハイブリッドコマンドは、`ctx.send_webhook()` メソッドを使用して、指定されたWebhook URLにリッチな埋め込みを含むメッセージを送信する方法を示します。これは、ボットが完全なメンバーでなくても、またはメッセージ送信に特定のボット権限を使用しなくても、チャンネルに整形されたメッセージを送信するのに役立ちます。
-*   **インタラクションタイプの検出**: `invoketype` ハイブリッドコマンドは、`EnhancedContext` で利用可能な `ctx.interaction_type` プロパティを使用して、コマンドがスラッシュコマンド、メッセージコンポーネント（ボタンクリックなど）、または従来のプレフィックスベースのメッセージコマンド経由で呼び出されたかどうかを判断する方法を示します。
+# ボットの初期化
+# config.ini ファイルへのパスを指定します
+bot = DispyplusBot(
+    command_prefix="!",
+    intents=intents,
+    config_path='config.ini' # DispyplusBotが内部でConfigManagerを管理します
+)
 
-**更新されたサンプルを実行するには：**
+# 簡単なハイブリッドコマンド
+@bot.hybrid_command(name="ping", description="Pong! と返します")
+async def ping(ctx: EnhancedContext):
+    await ctx.success(f"Pong! 遅延: {bot.latency*1000:.2f}ms")
 
-1.  「インストール」セクションで説明されているように、`config.ini` ファイルが正しく設定されていること（特にボットトークン）を確認してください。
-2.  `webhooktest` コマンドを完全にテストするには、Discordサーバーチャンネルの有効なWebhook URLが必要です。コマンドを呼び出す際に、このURLを引数として渡すことができます。
-3.  ターミナルを開き、リポジトリのルートディレクトリに移動して、Pythonを使用してサンプルファイルを実行します：
-    ```bash
-    python example/simple_example.py
-    ```
+# カスタムイベントデコレータの使用 (Cog内での使用を推奨)
+# この例はメインファイルにありますが、通常はCogに配置します。
+@on_message_contains("こんにちはボット", ignore_bot=True)
+async def respond_to_hello(ctx: EnhancedContext, message: discord.Message):
+    # この関数はデコレータにより自動的に登録されます。
+    # ボットの on_message ハンドラが条件を満たした場合にこれを呼び出します。
+    # Cog内で定義する場合、Cogがボットに追加されている必要があります。
+    await message.reply(f"こんにちは、{message.author.mention}さん！")
 
-この大幅に拡張された `simple_example.py` は、新しいコンポーネントがどのように連携して動作し、それらを独自のCogやボットロジック全体に統合する方法を理解するための最良のリソースとなることを意図しています。
+# サンプルCog (コマンドやイベントハンドラを整理するために推奨)
+class MyCog(commands.Cog):
+    def __init__(self, bot: DispyplusBot):
+        self.bot = bot
 
-*利用可能なすべてのカスタムイベントデコレータとその特定のパラメータ（`ignore_bot`、`case_sensitive`、`target_channel`など）の詳細なリストについては、`core/custom_events.py`ファイル内のdocstringを参照してください。*
+    @commands.command()
+    async def ask_test(self, ctx: EnhancedContext):
+        confirm = await ctx.ask("本当にこれを実行しますか？")
+        if confirm:
+            await ctx.send("はい と回答しました！")
+        elif confirm is False: # 明示的に False (Noneではない、タイムアウトした場合)
+            await ctx.send("いいえ と回答しました。")
+        else:
+            await ctx.send("時間内に回答しませんでした。")
 
-## 🤝 貢献について
+    @on_message_contains("魔法の言葉") # Cog内のカスタムイベント
+    async def magic_handler(self, ctx: EnhancedContext, message: discord.Message):
+        await message.channel.send("魔法の言葉を言いましたね！")
 
-1. リポジトリをフォーク
-2. 機能ブランチ作成
-   `git checkout -b feature/新機能`
-3. 変更をコミット
-   `git commit -m '新機能を追加'`
-4. ブランチにプッシュ
-   `git push origin feature/新機能`
-5. プルリクエストを作成
+async def main():
+    # config.ini に 'Bot' セクションと 'token' があることを確認してください
+    # 設定例 config.ini:
+    # [Bot]
+    # token = あなたのボットトークン
+    # prefix = !
+    #
+    # [Logging]
+    # level = INFO
+    # file = bot.log
+
+    # Cogの追加
+    await bot.add_cog(MyCog(bot))
+
+    # config.ini からトークンを取得してボットを起動
+    # トークンは bot.config.get('Bot', 'token') で取得されます
+    token = bot.config.get('Bot', 'token')
+    if not token:
+        print("エラー: config.ini にボットトークンが見つかりません。")
+        return
+    await bot.start(token)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+全てのカスタムイベントデコレータやUIコンポーネントを含むより詳細な例については、リポジトリの `example/simple_example.py` ファイルを参照してください。
+
+## 🔧 設定 (`config.ini`)
+
+DispyplusBotは設定に `config.ini` ファイルを使用します。デフォルトでは、カレントワーキングディレクトリの `config.ini` を探します。
+
+最小限の `config.ini` は以下のようになります:
+```ini
+[Bot]
+token = あなたのDISCORDボットトークンをここに
+prefix = !
+
+[Logging]
+# オプション: デフォルトは INFO
+level = INFO
+# オプション: デフォルトは bot.log
+file = my_bot.log
+```
+
+`ConfigManager` はホットリロードをサポートしています。ボット実行中に `config.ini` を変更すると、変更が反映されることがあります（例: プレフィックス、ログレベル、ボットが使用するカスタム設定など）。設定がリロードされると、ボットは `on_config_reload` イベントを発行します。
+
+## 🤝 貢献
+
+貢献を歓迎します！以下の手順に従ってください:
+
+1. リポジトリをフォークします。
+2. 機能ブランチを作成します: `git checkout -b feature/あなたの新機能`
+3. 変更をコミットします: `git commit -m '機能追加'`
+4. ブランチにプッシュします: `git push origin feature/あなたの新機能`
+5. プルリクエストを開きます。
+
+必要に応じてテストを更新してください。
 
 ## 📜 ライセンス
 
-MITライセンスで配布されています。詳細は`LICENSE`ファイルを参照してください。
+MITライセンスで配布されています。詳細は `LICENSE` ファイルを参照してください。

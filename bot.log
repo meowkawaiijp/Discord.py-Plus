@@ -1,0 +1,5 @@
+[2025-07-06 19:21:21,227] WARNING [discord.client]: PyNaCl is not installed, voice will NOT be supported
+[2025-07-06 19:21:21,230] INFO [discord.client]: logging in using static token
+[2025-07-06 19:21:21,422] ERROR [asyncio]: Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x7f4138a8ec30>, 1814.841597652)])']
+connector: <aiohttp.connector.TCPConnector object at 0x7f413a49f770>

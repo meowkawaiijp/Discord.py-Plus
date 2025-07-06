@@ -7,8 +7,8 @@ EnhancedBot と連携し、特定の条件に基づいたイベント処理を�
 
 使用例 (Cog内):
 ```python
-from core.custom_events import on_message_contains
-from core.other import EnhancedContext
+from .custom_events import on_message_contains # Changed from core.custom_events
+from .other import EnhancedContext # Changed from core.other
 from discord.ext import commands
 import discord
 
@@ -556,6 +556,6 @@ on_guild_owner_change = _create_event_decorator(
     `async def func(self, guild: discord.Guild, before_owner: Union[discord.User, discord.Member], after_owner: Union[discord.User, discord.Member])`
 """
 
-# EnhancedBot の型ヒントのため (循環参照を避ける)
+# DispyplusBot の型ヒントのため (循環参照を避ける)
 if False:
-    from .Dispyplus import EnhancedBot
+    from .Dispyplus import DispyplusBot

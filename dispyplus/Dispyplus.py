@@ -5,10 +5,10 @@ import logging
 import datetime
 from datetime import timezone
 from pathlib import Path
-from typing import Optional, Coroutine, Dict, TypeVar, List, Tuple, Callable, Any
-from core.config import ConfigManager
-from core.other import EnhancedContext
-from core.custom_events import CustomEventManager # 追加
+from typing import Optional, Coroutine, Dict, TypeVar, List, Tuple, Callable, Any, Union
+from .config import ConfigManager
+from .other import EnhancedContext
+from .custom_events import CustomEventManager # 追加
 import discord
 from discord.ext import commands
 import inspect # 追加
@@ -17,11 +17,26 @@ import aiohttp # 追加
 T = TypeVar('T')
 EventCoroutine = Callable[..., Coroutine[Any, Any, None]] # 追加
 EventPredicate = Callable[..., bool] # 追加
-class EnhancedBot(commands.Bot):
-    """拡張Botクラス
+class DispyplusBot(commands.Bot):
+    """
+    An enhanced `discord.ext.commands.Bot` class with additional features.
 
-    ・設定ファイル管理、ロガー設定  
-    ・タスクスケジューリング機能や動的拡張機能読み込みなどを実装
+    This bot class integrates configuration management, custom logging, task scheduling,
+    dynamic Cog loading, a custom event management system, and provides an
+    `EnhancedContext` for commands.
+
+    Args:
+        config_path (str, optional): Path to the configuration INI file.
+            Defaults to 'config.ini'.
+        *args: Arguments to pass to `discord.ext.commands.Bot`.
+        **kwargs: Keyword arguments to pass to `discord.ext.commands.Bot`.
+
+    Attributes:
+        config (ConfigManager): Manages bot configuration from an INI file.
+        logger (logging.Logger): Custom logger instance for the bot.
+        custom_event_manager (CustomEventManager): Manages custom event listeners.
+        extension_dir (Path): Directory for bot extensions (Cogs).
+        start_time (datetime.datetime): UTC timestamp of when the bot instance was initialized.
     """
     def __init__(self, *args, **kwargs):
         self.config_path = kwargs.pop('config_path', 'config.ini')
