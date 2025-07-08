@@ -1,9 +1,9 @@
 import asyncio
 import logging
 from dispyplus import DispyplusBot
-from dispyplus import ConfigManager # core.configから変更
-from dispyplus import log_execution, permission_check # core.decoratorsから変更
-from dispyplus import EnhancedContext # core.otherから変更
+from dispyplus import ConfigManager
+from dispyplus import log_execution, permission_check
+from dispyplus import EnhancedContext
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -37,9 +37,9 @@ bot = DispyplusBot(
 async def ping(ctx: EnhancedContext):
     await ctx.success(f"pong")
 
-@bot.hybrid_command(name="purge") # commands.hybrid_command から bot.hybrid_command へ変更 (EnhancedBotが継承しているため)
+@bot.hybrid_command(name="purge")
 @app_commands.describe(limit="削除するメッセージ数")
-@permission_check(permissions=['manage_messages']) # core.decorators から
+@permission_check(permissions=['manage_messages'])
 async def purge_messages(
         ctx: EnhancedContext,
         limit: int = 10
@@ -69,10 +69,10 @@ async def purge_messages(
 
 # --- 新機能のサンプルコード ---
 # サンプルCogクラス
-from dispyplus import on_message_contains, on_reaction_add, on_user_voice_join # core.custom_eventsから変更
+from dispyplus import on_message_contains, on_reaction_add, on_user_voice_join
 
 class ExampleCog(commands.Cog):
-    def __init__(self, bot: DispyplusBot): # EnhancedBot を DispyplusBot に変更
+    def __init__(self, bot: DispyplusBot):
         self.bot = bot
         self.logger = bot.logger
 

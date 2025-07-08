@@ -3,7 +3,7 @@ import asyncio
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .Dispyplus import DispyplusBot
+    from ..bot import DispyplusBot
 
 
 async def start_config_watcher(bot: "DispyplusBot") -> Optional[asyncio.Task]:

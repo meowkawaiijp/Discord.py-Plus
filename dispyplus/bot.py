@@ -5,16 +5,14 @@ from datetime import timezone
 from pathlib import Path
 from typing import Optional, Coroutine, Dict, TypeVar, Callable, Any, Union, List
 
-from .config import ConfigManager
-# .other の代わりに .context を使用 (EnhancedContextのため)
-from .context import EnhancedContext
-from .event_manager import CustomEventManager # CustomEventManager のインポートパスを修正
-# 新しいモジュールをインポート
-from .logging_utils import setup_logger as setup_logger_util
-from .tasks import schedule_task as schedule_task_util, cancel_task as cancel_task_util, get_task as get_task_util, get_all_tasks as get_all_tasks_util
-from .webhook import send_webhook_message
-from .utils import start_config_watcher as start_config_watcher_util
-from .event_handlers import register_event_handlers
+from .utils.config import ConfigManager
+from .core.context import EnhancedContext
+from .events.manager import CustomEventManager
+from .utils.logging import setup_logger as setup_logger_util
+from .services.tasks import schedule_task as schedule_task_util, cancel_task as cancel_task_util, get_task as get_task_util, get_all_tasks as get_all_tasks_util
+from .services.webhook import send_webhook_message
+from .utils.helpers import start_config_watcher as start_config_watcher_util
+from .events.handlers import register_event_handlers
 
 
 import discord

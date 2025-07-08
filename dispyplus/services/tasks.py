@@ -5,7 +5,7 @@ from datetime import timezone
 from typing import Coroutine, Optional, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .Dispyplus import DispyplusBot
+    from ..bot import DispyplusBot
 
 
 def schedule_task(

@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .Dispyplus import DispyplusBot
+    from ..bot import DispyplusBot
     from .config import ConfigManager
 
 

@@ -6,7 +6,7 @@ from discord import ui # uiをインポート
 from typing import Optional, List, Union, cast, TYPE_CHECKING, TypeVar, Generic
 
 if TYPE_CHECKING:
-    from .context import EnhancedContext # EnhancedContextのインポートパスを修正
+    from ..core.context import EnhancedContext # EnhancedContextのインポートパスを修正
 
 # 型エイリアスをここに移動またはここで定義
 T = TypeVar('T') # other.py から移動

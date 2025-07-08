@@ -2,17 +2,17 @@
 Dispyplus - A Discord.py Bot Enhancement Library
 """
 
-__version__ = "0.1.1"  # ライブラリのバージョン (リファクタリングに伴い更新)
+__version__ = "0.1.2"  # ライブラリのバージョン (リファクタリングに伴い更新)
 
 # 主要なクラスや関数をインポートして、ライブラリのルートからアクセスできるようにする
-from .Dispyplus import DispyplusBot
-from .config import ConfigManager
-from .context import EnhancedContext
-from .enums import InteractionType
+from .bot import DispyplusBot
+from .utils.config import ConfigManager
+from .core.context import EnhancedContext
+from .core.enums import InteractionType
 
 # event_manager と event_decorators からインポート
-from .event_manager import CustomEventManager
-from .event_decorators import (
+from .events.manager import CustomEventManager
+from .events.decorators import (
     on_message_contains,
     on_message_matches,
     on_reaction_add,
@@ -28,23 +28,23 @@ from .event_decorators import (
     on_member_status_update,
     on_guild_name_change,
     on_guild_owner_change,
-    on_config_reload, # 追加
+    on_config_reload,
 )
-from .decorators import (
+from .core.decorators import (
     hybrid_group,
     permission_check,
     log_execution,
 )
 # ui と ui_components からインポート
-from .ui import (
+from .ui.views import (
     ConfirmationView,
     PaginatedSelectView,
     SimpleSelectView,
 )
-from .ui_components import (
+from .ui.components import (
     EnhancedView,
-    InteractiveSelect, # InteractiveSelect は ui_components に移動した
-    AdvancedSelect,   # AdvancedSelect は ui_components に移動した
+    InteractiveSelect,
+    AdvancedSelect,
     TimeoutSelect,
     PageButton,
     AdvancedSelectMenu,
@@ -72,6 +72,4 @@ __all__ = [
     "ConfirmationView", "PaginatedSelectView", "SimpleSelectView",
     "EnhancedView", "InteractiveSelect", "AdvancedSelect",
     "TimeoutSelect", "PageButton", "AdvancedSelectMenu",
-    # "Paginator" は other.py から削除され、ui.py にも明確な定義がないため、一旦 __all__ から削除
-    # 必要であれば ui.py に Paginator を再実装し、ここに追加
 ]

@@ -3,8 +3,8 @@ from typing import Callable, Coroutine, Dict, List, Tuple, Optional, Any, TYPE_C
 import asyncio # asyncio をインポート
 
 if TYPE_CHECKING:
-    from .Dispyplus import DispyplusBot #循環参照を避ける
-    from .event_decorators import EventPredicate, EventCoroutine # event_decoratorsから型をインポート
+    from ..bot import DispyplusBot #循環参照を避ける
+    from .decorators import EventPredicate, EventCoroutine # event_decoratorsから型をインポート
 
 class CustomEventManager:
     """
