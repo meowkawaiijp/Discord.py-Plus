@@ -3,38 +3,8 @@ import discord
 from discord import ui
 from typing import Optional, Callable, Awaitable, List, Any, Generic, TypeVar
 
-# Try to import EnhancedView from .other
-# This might cause a circular import if ui.py is imported by other.py at the top level.
-# Consider moving EnhancedView to a more foundational module or adjusting imports.
-# For now, let's assume EnhancedView can be imported or we'll define a simple base if not.
-try:
-    from .other import EnhancedView
-except ImportError:
-    # Fallback or define a minimal EnhancedView if direct import fails,
-    # though this indicates a potential design issue with circular dependencies.
-    class EnhancedView(ui.View): # type: ignore
-        async def on_timeout(self) -> None:
-            for item in self.children:
-                if hasattr(item, 'disabled'):
-                    item.disabled = True # type: ignore
-            if hasattr(self, 'message') and self.message:
-                 try:
-                    await self.message.edit(view=self) # type: ignore
-                 except discord.NotFound:
-                    pass
-            self.stop()
-
-        async def on_custom_timeout(self) -> None:
-            pass # Meant to be overridden by subclasses
-
-        async def on_error(self, interaction: discord.Interaction, error: Exception, item: ui.Item) -> None:
-            # Basic error logging
-            print(f"Error in EnhancedView item {item}: {error}")
-            if interaction.response.is_done():
-                await interaction.followup.send("An error occurred.", ephemeral=True)
-            else:
-                await interaction.response.send_message("An error occurred.", ephemeral=True)
-            self.stop()
+# EnhancedViewをui_componentsからインポート
+from .ui_components import EnhancedView
 
 
 ItemType = TypeVar("ItemType")

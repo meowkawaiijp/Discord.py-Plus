@@ -4,7 +4,7 @@ import datetime
 from datetime import timezone
 from functools import wraps
 from typing import List, Callable, TypeVar
-from .other import EnhancedContext # Changed from core.other
+from .context import EnhancedContext # EnhancedContextのインポートパスを修正
 import discord
 from discord.ext import commands
 T = TypeVar('T')
