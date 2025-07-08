@@ -273,3 +273,40 @@ if __name__ == "__main__":
     # こちらを単独で実行する場合は、simple_example.py の実行を止めるか、
     # 別のボットトークンを使用してください。
     asyncio.run(main())
+# --- DispyplusForm Prototype Test ---
+from dispyplus.ui.forms import DispyplusForm, field # Adjusted import based on potential file structure
+from typing import Dict # For type hinting
+
+class PrototypeTestForm(DispyplusForm):
+    form_title = "Prototype Form Test"
+
+    full_name: str = field(label="Full Name", placeholder="Enter your full name", required=True)
+    age: Optional[int] = field(label="Age (Optional)", required=False) # Keep as str for now, type conversion later
+    feedback: str = field(label="Your Feedback", style=discord.TextStyle.paragraph, required=True, min_length=10)
+
+    async def process_form_data(self, interaction: discord.Interaction, data: Dict[str, Any]):
+        # This method is called when the form is submitted and data is extracted
+        # For the prototype, we'll just send the data back to the user.
+        response_message = f"Prototype form submitted by {interaction.user.mention}!\n"
+        response_message += "Data received:\n"
+        for key, value in data.items():
+            response_message += f"- **{key}**: {value}\n"
+
+        # Ensure interaction is not already responded to
+        if not interaction.response.is_done():
+            await interaction.response.send_message(response_message, ephemeral=True)
+        else:
+            # If already responded (e.g. deferred), use followup
+            await interaction.followup.send(response_message, ephemeral=True)
+
+@bot.hybrid_command(name="form_proto_test", description="Test for DispyplusForm prototype.")
+async def form_proto_test_command(ctx: EnhancedContext):
+    """Displays the prototype test form."""
+    if not ctx.interaction:
+        await ctx.send("This command must be used as a slash command to test modals.")
+        return
+
+    # Instantiate and send the form
+    # No context needed for DispyplusForm constructor in this simplified prototype
+    test_form = PrototypeTestForm()
+    await ctx.interaction.response.send_modal(test_form)
