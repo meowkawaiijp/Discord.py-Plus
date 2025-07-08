@@ -7,10 +7,10 @@ from typing import Callable, Coroutine, Any, Optional, Union, Pattern, TYPE_CHEC
 import datetime # datetimeをインポート
 
 if TYPE_CHECKING:
-    from .context import EnhancedContext # EnhancedContextのインポートパスを修正
-    # from .Dispyplus import DispyplusBot # DispyplusBotの型ヒントが必要な場合
+    from ..core.context import EnhancedContext # EnhancedContextのインポートパスを修正
+    # from ..bot import DispyplusBot # DispyplusBotの型ヒントが必要な場合
 
-# 型エイリアス (custom_events.pyから移動)
+# 型エイリアス
 EventPredicate = Callable[..., bool]
 EventCoroutine = Callable[..., Coroutine[Any, Any, None]]
 

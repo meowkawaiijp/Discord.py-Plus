@@ -9,7 +9,7 @@ from .enums import InteractionType
 # uiモジュールからのインポート (循環参照を避けるためTYPE_CHECKINGを使用)
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .ui import ConfirmationView # ConfirmationViewの具体的なパスはui.pyの構造による
+    from ..ui.views import ConfirmationView # ConfirmationViewの具体的なパスはui.pyの構造による
 
 class EnhancedContext(commands.Context):
     """
@@ -87,7 +87,7 @@ class EnhancedContext(commands.Context):
 
     async def ask(self, message: str, *, timeout: float = 180.0, interaction_check: Optional[Callable[[discord.Interaction], Awaitable[bool]]] = None, embed_color: discord.Color = discord.Color.gold(), **kwargs) -> Optional[bool]:
         # .ui から ConfirmationView をインポート (循環参照を避けるため遅延インポート)
-        from .ui import ConfirmationView as DispyplusConfirmationView
+        from ..ui.views import ConfirmationView as DispyplusConfirmationView
 
         view = DispyplusConfirmationView(timeout=timeout, interaction_check=interaction_check)
         if self.author: # authorが存在することを確認

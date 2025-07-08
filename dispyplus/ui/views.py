@@ -4,7 +4,7 @@ from discord import ui
 from typing import Optional, Callable, Awaitable, List, Any, Generic, TypeVar
 
 # EnhancedViewをui_componentsからインポート
-from .ui_components import EnhancedView
+from .components import EnhancedView
 
 
 ItemType = TypeVar("ItemType")

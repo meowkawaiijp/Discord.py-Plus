@@ -4,7 +4,7 @@ import aiohttp
 from typing import Optional, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .Dispyplus import DispyplusBot
+    from ..bot import DispyplusBot
 
 
 async def send_webhook_message(

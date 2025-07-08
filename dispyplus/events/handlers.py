@@ -5,10 +5,10 @@ import discord
 from discord.ext import commands
 from typing import Union, TYPE_CHECKING
 
-from .context import EnhancedContext # EnhancedContextのインポートパスを修正
+from ..core.context import EnhancedContext # EnhancedContextのインポートパスを修正
 
 if TYPE_CHECKING:
-    from .Dispyplus import DispyplusBot
+    from ..bot import DispyplusBot
 
 
 async def on_message_custom(bot: "DispyplusBot", message: discord.Message) -> None:
