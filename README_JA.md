@@ -18,10 +18,20 @@ Dispyplusは、discord.pyを使用したDiscordボット開発を強化するた
     - Jishaku統合サポート。
 - **拡張コンテキスト (`EnhancedContext`)**:
     - スタイル付きメッセージ送信ユーティリティメソッド: `.success()`, `.error()`, `.warning()`, `.info()`。
-    - 対話型ダイアログ: 確認用の `.ask()` (`dispyplus.ui.ConfirmationView` を使用)。
-    - ページネーション: `dispyplus.ui.Paginator` を使用した `.paginate()`。
+    - 対話型ダイアログ:
+        - はい/いいえ確認用の `.ask()` (`dispyplus.ui.ConfirmationView` を使用)。
+        - **新機能**: モーダルフォーム表示・送信待機用の `.ask_form(YourFormClass)` (`DispyplusForm` を使用)。
+    - ページネーション:
+        - **新機能**: リスト、非同期イテレータ、テキスト行、カスタムEmbedリストなどを柔軟にページ分けする `AdvancedPaginatorView` を使用した `.paginate(data_source, ...)`。多様なナビゲーションコントロールをサポート。
     - インタラクションタイプ確認プロパティ: `.interaction_type`。
     - Webhook送信ヘルパー: `.send_webhook()`。
+- **UIコンポーネント (`dispyplus.ui`)**:
+    - `EnhancedView`: タイムアウト処理が組み込まれたベースビュー。
+    - `ConfirmationView`: 簡単な はい/いいえ 確認ダイアログ。
+    - `Paginator` & `PaginatedSelectView`: 旧ページネーションコンポーネント（新規利用時は `AdvancedPaginatorView` を推奨）。
+    - `SimpleSelectView`: 基本的なセレクトメニュー。
+    - **新機能**: `AdvancedPaginatorView`: 様々なデータ型に対応し、複数のコントロールオプション（ボタン、ページジャンプモーダル、セレクトメニュー）を持つ高機能なページネーション。
+    - **新機能**: `DispyplusForm`: フィールド定義、型変換、バリデーション機能を備えたモーダルフォームを宣言的に作成。`EnhancedContext.ask_form()` と連携。
 - **カスタムイベントシステム**:
     - カスタムイベントタイプを管理・ディスパッチする `CustomEventManager`。
     - 条件ベースフィルタリング付きの一般的なDiscordイベント用デコレータ:
@@ -35,15 +45,6 @@ Dispyplusは、discord.pyを使用したDiscordボット開発を強化するた
 - **便利なデコレータ**:
     - `@permission_check`: ユーザー権限やロールを簡単にチェック。
     - `@log_execution`: コマンド実行詳細をログ記録。
-- **UIコンポーネント**:
-    - `discord.ui` を活用し、ボタン、セレクトメニュー、モーダルなどのモダンなUI要素を提供。
-    - 新しいUIコンポーネントはすべて `dispyplus.ui` モジュールに配置:
-    - `EnhancedView`: タイムアウト処理とコンポーネント無効化機能が組み込まれ、他のUI要素の基盤となるベースビュー。
-    - `ConfirmationView` (`dispyplus.ui` 内): `discord.ui.Button` を使用した簡単な はい/いいえ 確認ダイアログ。
-    - `Paginator` (`dispyplus.ui` 内): ボタンナビゲーション付きのページ分割されたEmbed作成用。
-    - `PaginatedSelectView` (`dispyplus.ui` 内): 多数の選択肢を扱うためのページネーション機能が組み込まれたセレクトメニュー。
-    - `SimpleSelectView` (`dispyplus.ui` 内): 事前定義された選択肢リストのためのシンプルなセレクトメニュー。
-    - (注意: `dispyplus.other` にあった古いUIコンポーネントは削除されたか、`dispyplus.ui` に移行されました。)
 - **Webhookユーティリティ**:
   - `DispyplusBot.send_webhook()` および `EnhancedContext.send_webhook()` による簡単なWebhookメッセージ送信。
 

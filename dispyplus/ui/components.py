@@ -3,7 +3,7 @@
 import asyncio
 import discord
 from discord import ui # uiをインポート
-from typing import Optional, List, Union, cast, TYPE_CHECKING, TypeVar, Generic
+from typing import Optional, List, Union, cast, TYPE_CHECKING, TypeVar, Generic, Any # Added Any
 
 if TYPE_CHECKING:
     from ..core.context import EnhancedContext # EnhancedContextのインポートパスを修正

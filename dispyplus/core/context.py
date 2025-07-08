@@ -2,14 +2,17 @@
 import discord
 from discord.ext import commands
 import datetime
-from typing import Optional, Callable, Awaitable
+from typing import Optional, Callable, Awaitable, Type, List, Any, Union, AsyncIterator, Tuple, Literal, TYPE_CHECKING, Dict # Ensure Type and Dict is imported at the top level
 
 # InteractionTypeを新しいenumsモジュールからインポート
 from .enums import InteractionType
 # uiモジュールからのインポート (循環参照を避けるためTYPE_CHECKINGを使用)
-from typing import TYPE_CHECKING
+# from typing import TYPE_CHECKING, List, Any, Union, AsyncIterator, Tuple, Literal # Moved Type to main import
+
 if TYPE_CHECKING:
     from ..ui.views import ConfirmationView # ConfirmationViewの具体的なパスはui.pyの構造による
+    from ..ui.pagination import AdvancedPaginatorView # For type hinting in paginate method arguments
+    from ..ui.forms import DispyplusForm # Direct import in TYPE_CHECKING is fine
 
 class EnhancedContext(commands.Context):
     """
@@ -149,3 +152,159 @@ class EnhancedContext(commands.Context):
                 self.bot.logger.error("Bot instance does not have 'send_webhook'. Are you using DispyplusBot?") # type: ignore
             raise AttributeError("The bot instance does not have a 'send_webhook' method. Ensure you are using DispyplusBot.")
         return await self.bot.send_webhook(url, *args, **kwargs) # type: ignore
+
+
+    async def paginate(
+        self,
+        data_source: Union[List[Any], AsyncIterator[Any]],
+        items_per_page: int = 10,
+        *,
+        content_type: Literal["embeds", "text_lines", "generic"] = "generic",
+        formatter_func: Optional[Callable[[List[Any], int, "AdvancedPaginatorView"], Union[str, discord.Embed, Tuple[Optional[str], Optional[discord.Embed]]]]] = None,
+        show_page_buttons: bool = True,
+        # show_page_select: bool = False, # Future options
+        # show_jump_button: bool = False, # Future options
+        timeout: Optional[float] = 180.0,
+        initial_message_content: Optional[str] = None # Optional text to send with the first page
+    ) -> Optional[discord.Message]:
+        """
+        Sends a paginated message using AdvancedPaginatorView.
+
+        Args:
+            data_source: The data to paginate (list or async iterator).
+            items_per_page: Number of items per page.
+            content_type: Type of content ('embeds', 'text_lines', 'generic').
+            formatter_func: Custom function to format pages for 'generic' type.
+                           Signature: (items_on_page, page_num, view_instance) -> Union[str, discord.Embed, Tuple[Optional[str], Optional[discord.Embed]]]
+            show_page_buttons: Whether to show navigation buttons.
+            timeout: Timeout for the view in seconds.
+            initial_message_content: Optional text to send before the paginator (e.g., "Here are your results:").
+
+        Returns:
+            The discord.Message object for the paginator, or None if sending failed.
+        """
+        # Defer import to avoid circular dependencies at module load time
+        from ..ui.pagination import AdvancedPaginatorView
+        # For type hinting ask_form
+        # from typing import Dict, Any, Type # Already imported at top level
+        import inspect # For checking form_class.__init__ signature
+        # TYPE_CHECKING block for DispyplusForm is already at the top of the file.
+
+
+        if self.interaction and initial_message_content and not self.interaction.response.is_done():
+            # If there's initial content and we haven't responded to interaction yet,
+            # send the initial content first, then the paginator as a followup.
+            # This is one way to handle it; another is to pass initial_message_content to the view.
+            # For simplicity, let's assume initial_message_content is part of the first page if not handled here.
+            # However, AdvancedPaginatorView doesn't directly support initial_message_content for the *first* message.
+            # It expects to send its own content/embed.
+            # A simple solution: if initial_message_content, send it, then paginator.
+            # This requires the paginator to be sent as a new message or followup.
+
+            # If we need to send a message BEFORE the paginator view itself (e.g. as a header):
+            # This approach means the paginator will be a *separate* message or a followup.
+            # For now, this example will integrate initial_message_content into the first page of the paginator
+            # if the formatter or content type allows. The current AdvancedPaginatorView's format_page
+            # would need to be aware of this or the helper here would pre-format.
+            # Let's assume initial_message_content is for the message *containing* the paginator.
+            pass
+
+
+        view = AdvancedPaginatorView(
+            data_source=data_source,
+            items_per_page=items_per_page,
+            formatter_func=formatter_func,
+            content_type=content_type,
+            show_page_buttons=show_page_buttons,
+            timeout=timeout,
+            author_id=self.author.id if self.author else None
+        )
+
+        # The AdvancedPaginatorView's send_initial_message will handle interaction vs regular context.
+        # If initial_message_content is provided, and we are in an interaction that hasn't been responded to,
+        # we might need to send the initial_message_content as part of the first response.
+        # This is a bit complex due to how interactions expect a single initial response.
+
+        # Simplification: AdvancedPaginatorView's first page content/embed IS the initial message.
+        # If `initial_message_content` is provided, it will be IGNORED by this basic helper,
+        # unless the user's `formatter_func` incorporates it.
+        # A more advanced helper might send `initial_message_content` first if `ctx.send` is used,
+        # and then send the paginator. For interactions, it's trickier.
+
+        try:
+            # If there's an interaction and initial_message_content, and we haven't responded:
+            if self.interaction and initial_message_content and not self.interaction.response.is_done():
+                 await self.interaction.response.send_message(initial_message_content)
+                 # Now the paginator must be a followup
+                 message = await view.send_initial_message(self.interaction.followup) # type: ignore
+            else:
+                 message = await view.send_initial_message(self) # Pass context/interaction to view's sender
+            return message
+        except Exception as e:
+            if hasattr(self.bot, 'logger'):
+                self.bot.logger.error(f"Error sending paginated message: {e}", exc_info=True) # type: ignore
+            return None
+
+    async def ask_form(
+        self,
+        form_class: Type['DispyplusForm'], # Use string literal for forward reference
+        *,
+        title: Optional[str] = None,
+        timeout: Optional[float] = 180.0,
+        **kwargs_for_form_init: Any
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Displays a DispyplusForm modal to the user and waits for submission.
+
+        Args:
+            form_class: The subclass of DispyplusForm to display.
+            title: Optional title for the modal, overrides form_class.form_title.
+            timeout: Optional timeout for the modal.
+            **kwargs_for_form_init: Additional keyword arguments to pass to the form's constructor.
+                                   (Note: ctx is automatically passed if form_class.__init__ accepts it)
+
+        Returns:
+            A dictionaryตำรวจof submitted data if the form was successfully submitted,
+            None if the form timed out or was cancelled (e.g., due to validation error feedback
+            not leading to a resubmit, or an internal error before future is set).
+            May raise an exception if an error occurred within process_form_data and was set on the future.
+        """
+        if not self.interaction:
+            # Modals can only be sent in response to an interaction.
+            # Consider raising an error or logging a warning.
+            if hasattr(self.bot, 'logger'):
+                self.bot.logger.warning("ask_form called without an active interaction. Modals require interactions.") # type: ignore
+            # For now, let's allow it to proceed; send_modal will fail if not an interaction context.
+            # A better approach might be to check self.interaction_type.
+            # if self.interaction_type == InteractionType.UNKNOWN:
+            #     raise TypeError("Cannot send a modal from a non-interaction context.")
+            # However, this check might be too restrictive if used in hybrid commands responding to messages.
+            # The discord.py library itself will raise if send_modal is misused.
+            # For now, let it pass to discord.py's handling.
+            pass
+
+        # Check if 'ctx' is an expected argument in the form's __init__
+        form_init_params = inspect.signature(form_class.__init__).parameters
+        if 'ctx' in form_init_params:
+            kwargs_for_form_init['ctx'] = self
+
+        form_instance = form_class(title=title, timeout=timeout, **kwargs_for_form_init)
+
+        if not self.interaction: # Should have been caught by discord.py before this
+            await self.send("Forms can only be used with slash commands or component interactions.")
+            return None
+
+        await self.interaction.response.send_modal(form_instance)
+
+        try:
+            # Wait for the future to be resolved by on_submit, on_error, or on_timeout
+            result = await form_instance.future
+            return result
+        except Exception as e:
+            # If future had an exception set (e.g., from process_form_data error)
+            if hasattr(self.bot, 'logger'):
+                self.bot.logger.error(f"Exception caught while waiting for form '{form_class.__name__}': {e}", exc_info=True) # type: ignore
+            # Optionally re-raise or return None/error indicator
+            # For now, re-raising to make errors visible.
+            raise
+        # Timeout or other non-exception future results (like None from validation fail leading to no data) handled by 'result'

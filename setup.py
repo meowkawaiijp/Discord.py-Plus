@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.1.2' # Updated to match dispyplus/__init__.py
-DESCRIPTION = 'A utility library to enhance discord.py bot development.'
+VERSION = '0.2.0'
+DESCRIPTION = 'A utility library to enhance discord.py bot development, now with advanced pagination and forms.'
 LONG_DESCRIPTION = """\
 Dispyplus is a Python library that provides several enhancements and utility features
 for developing Discord bots with discord.py. It simplifies common tasks such as

@@ -2,7 +2,7 @@
 Dispyplus - A Discord.py Bot Enhancement Library
 """
 
-__version__ = "0.1.2"  # ライブラリのバージョン (リファクタリングに伴い更新)
+__version__ = "0.2.0"
 
 # 主要なクラスや関数をインポートして、ライブラリのルートからアクセスできるようにする
 from .bot import DispyplusBot
@@ -72,4 +72,9 @@ __all__ = [
     "ConfirmationView", "PaginatedSelectView", "SimpleSelectView",
     "EnhancedView", "InteractiveSelect", "AdvancedSelect",
     "TimeoutSelect", "PageButton", "AdvancedSelectMenu",
+    # New UI additions from this version
+    "AdvancedPaginatorView",
+    "DispyplusForm", "text_field", "BaseFormField", "TextInputFormField",
+    # Wizard components (experimental)
+    # "WizardController", "WizardStep", # Commented out as wizard is not fully implemented
 ]
