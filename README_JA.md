@@ -22,16 +22,17 @@ Dispyplusは、discord.pyを使用したDiscordボット開発を強化するた
         - はい/いいえ確認用の `.ask()` (`dispyplus.ui.ConfirmationView` を使用)。
         - **新機能**: モーダルフォーム表示・送信待機用の `.ask_form(YourFormClass)` (`DispyplusForm` を使用)。
     - ページネーション:
-        - **新機能**: リスト、非同期イテレータ、テキスト行、カスタムEmbedリストなどを柔軟にページ分けする `AdvancedPaginatorView` を使用した `.paginate(data_source, ...)`。多様なナビゲーションコントロールをサポート。
+        - **新機能**: リスト、非同期イテレータ、テキスト行、カスタムEmbedリストなどを柔軟にページ分けする `PaginatorView` を使用した `.paginate(data_source, ...)`。多様なナビゲーションコントロールをサポート。
     - インタラクションタイプ確認プロパティ: `.interaction_type`。
     - Webhook送信ヘルパー: `.send_webhook()`。
 - **UIコンポーネント (`dispyplus.ui`)**:
     - `EnhancedView`: タイムアウト処理が組み込まれたベースビュー。
     - `ConfirmationView`: 簡単な はい/いいえ 確認ダイアログ。
-    - `Paginator` & `PaginatedSelectView`: 旧ページネーションコンポーネント（新規利用時は `AdvancedPaginatorView` を推奨）。
+    - `PaginatedSelectView`: セレクトメニューの選択肢をページ分けします。
     - `SimpleSelectView`: 基本的なセレクトメニュー。
-    - **新機能**: `AdvancedPaginatorView`: 様々なデータ型に対応し、複数のコントロールオプション（ボタン、ページジャンプモーダル、セレクトメニュー）を持つ高機能なページネーション。
+    - **新機能**: `PaginatorView`: 様々なデータ型に対応し、複数のコントロールオプション（ボタン、ページジャンプモーダル、セレクトメニュー）を持つ高機能なページネーション。
     - **新機能**: `DispyplusForm`: フィールド定義、型変換、バリデーション機能を備えたモーダルフォームを宣言的に作成。`EnhancedContext.ask_form()` と連携。
+    - **新機能**: `JumpToPageModal`: `PaginatorView` で使用され、ユーザーが特定のページにジャンプできるようにするモーダル。
 - **カスタムイベントシステム**:
     - カスタムイベントタイプを管理・ディスパッチする `CustomEventManager`。
     - 条件ベースフィルタリング付きの一般的なDiscordイベント用デコレータ:

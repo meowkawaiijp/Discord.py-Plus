@@ -11,7 +11,7 @@ from .enums import InteractionType
 
 if TYPE_CHECKING:
     from ..ui.views import ConfirmationView # ConfirmationViewの具体的なパスはui.pyの構造による
-    from ..ui.pagination import AdvancedPaginatorView # For type hinting in paginate method arguments
+    from ..ui.pagination import PaginatorView # For type hinting in paginate method arguments
     from ..ui.forms import DispyplusForm # Direct import in TYPE_CHECKING is fine
 
 class EnhancedContext(commands.Context):
@@ -160,7 +160,7 @@ class EnhancedContext(commands.Context):
         items_per_page: int = 10,
         *,
         content_type: Literal["embeds", "text_lines", "generic"] = "generic",
-        formatter_func: Optional[Callable[[List[Any], int, "AdvancedPaginatorView"], Union[str, discord.Embed, Tuple[Optional[str], Optional[discord.Embed]]]]] = None,
+        formatter_func: Optional[Callable[[List[Any], int, "PaginatorView"], Union[str, discord.Embed, Tuple[Optional[str], Optional[discord.Embed]]]]] = None,
         show_page_buttons: bool = True,
         # show_page_select: bool = False, # Future options
         # show_jump_button: bool = False, # Future options
@@ -184,7 +184,7 @@ class EnhancedContext(commands.Context):
             The discord.Message object for the paginator, or None if sending failed.
         """
         # Defer import to avoid circular dependencies at module load time
-        from ..ui.pagination import AdvancedPaginatorView
+        from ..ui.pagination import PaginatorView
         # For type hinting ask_form
         # from typing import Dict, Any, Type # Already imported at top level
         import inspect # For checking form_class.__init__ signature
@@ -210,7 +210,7 @@ class EnhancedContext(commands.Context):
             pass
 
 
-        view = AdvancedPaginatorView(
+        view = PaginatorView(
             data_source=data_source,
             items_per_page=items_per_page,
             formatter_func=formatter_func,

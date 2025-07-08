@@ -3,8 +3,8 @@ import discord
 from discord.ext import commands
 
 from dispyplus import DispyplusBot, EnhancedContext, ConfigManager
-# AdvancedPaginatorView is automatically imported via dispyplus.ui
-# from dispyplus.ui import AdvancedPaginatorView # Direct import if needed
+# PaginatorView is automatically imported via dispyplus.ui
+# from dispyplus.ui import PaginatorView # Direct import if needed
 
 # --- Bot Setup (similar to other examples) ---
 CONFIG_FILE = 'config.ini'
@@ -101,7 +101,7 @@ class PaginationExamplesCog(commands.Cog):
     def _custom_item_formatter(self, items_on_page, page_number, view_instance):
         # items_on_page is a list of items for the current page
         # page_number is 0-indexed
-        # view_instance is the AdvancedPaginatorView instance (for accessing total_pages etc. if needed)
+        # view_instance is the PaginatorView instance (for accessing total_pages etc. if needed)
 
         title = f"Custom Formatted - Page {page_number + 1}"
         if view_instance.total_pages is not None:

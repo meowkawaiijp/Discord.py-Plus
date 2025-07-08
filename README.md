@@ -25,16 +25,17 @@ confirmation dialogs, and more.
         - `.ask()` for Yes/No confirmations (uses `dispyplus.ui.ConfirmationView`).
         - **New**: `.ask_form(YourFormClass)` to display a modal form (defined using `DispyplusForm`) and await submission.
     - Pagination:
-        - **New**: `.paginate(data_source, ...)` using the new `AdvancedPaginatorView` for flexible pagination of lists, async iterators, text lines, or custom embed lists. Supports various navigation controls.
+        - **New**: `.paginate(data_source, ...)` using the new `PaginatorView` for flexible pagination of lists, async iterators, text lines, or custom embed lists. Supports various navigation controls.
     - Property to check interaction type: `.interaction_type`.
     - Helper to send webhooks: `.send_webhook()`.
 - **UI Components (`dispyplus.ui`)**:
     - `EnhancedView`: Base view with built-in timeout handling.
     - `ConfirmationView`: Simple Yes/No confirmation dialog.
-    - `Paginator` & `PaginatedSelectView`: Older pagination components (consider `AdvancedPaginatorView` for new uses).
+    - `PaginatedSelectView`: For paginating select menu options.
     - `SimpleSelectView`: Basic select menu.
-    - **New**: `AdvancedPaginatorView`: Highly flexible pagination for various data types with multiple control options (buttons, jump-to-page modal, select menu).
+    - **New**: `PaginatorView`: Highly flexible pagination for various data types with multiple control options (buttons, jump-to-page modal, select menu).
     - **New**: `DispyplusForm`: Declaratively create modal forms with fields, type conversion, and validation. Works with `EnhancedContext.ask_form()`.
+    - **New**: `JumpToPageModal`: A modal used by `PaginatorView` to allow users to jump to a specific page.
 - **Custom Event System**:
     - `CustomEventManager` to manage and dispatch custom event types.
     - Decorators for common Discord events with predicate-based filtering:
@@ -145,7 +146,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-For more detailed examples, including custom event decorators, `AdvancedPaginatorView`, and `DispyplusForm`,
+For more detailed examples, including custom event decorators, `PaginatorView`, and `DispyplusForm`,
 please refer to the `example/simple_example.py`, `example/ui_example.py`, and `example/pagination_example.py` files in the repository.
 
 ## 🔧 Configuration (`config.ini`)
