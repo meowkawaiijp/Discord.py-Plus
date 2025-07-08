@@ -274,39 +274,89 @@ if __name__ == "__main__":
     # 別のボットトークンを使用してください。
     asyncio.run(main())
 # --- DispyplusForm Prototype Test ---
-from dispyplus.ui.forms import DispyplusForm, field # Adjusted import based on potential file structure
-from typing import Dict # For type hinting
+from dispyplus.ui.forms import DispyplusForm, text_field # Use new text_field helper
+from typing import Dict, Any, Tuple, Union # For type hinting
+
+# Example custom validator
+def is_valid_age(value: Any, interaction: discord.Interaction) -> Union[bool, Tuple[bool, str]]:
+    try:
+        age = int(value) # Already converted by target_type=int, but good practice if used raw
+        if 1 <= age <= 120:
+            return True
+        return False, "Age must be between 1 and 120."
+    except ValueError:
+        return False, "Age must be a valid number."
 
 class PrototypeTestForm(DispyplusForm):
-    form_title = "Prototype Form Test"
+    form_title = "Enhanced Form Test"
 
-    full_name: str = field(label="Full Name", placeholder="Enter your full name", required=True)
-    age: Optional[int] = field(label="Age (Optional)", required=False) # Keep as str for now, type conversion later
-    feedback: str = field(label="Your Feedback", style=discord.TextStyle.paragraph, required=True, min_length=10)
+    full_name: str = text_field(label="Full Name", placeholder="Enter your full name", required=True, target_type=str)
+    email: str = text_field(
+        label="Email Address",
+        placeholder="user@example.com",
+        target_type=str,
+        validator=lambda v, i: ("@" in v and "." in v.split("@")[-1], "Please enter a valid email address.")
+    )
+    age: Optional[int] = text_field(
+        label="Age (1-120, Optional)",
+        required=False,
+        target_type=int, # Will attempt to convert to int
+        validator=is_valid_age
+    )
+    subscribe: bool = text_field(
+        label="Subscribe to newsletter? (yes/no)",
+        required=True,
+        target_type=bool # Will convert 'yes', 'true', '1' to True, etc.
+    )
+    feedback: str = text_field(
+        label="Your Feedback (min 10 chars)",
+        style=discord.TextStyle.paragraph,
+        required=True,
+        min_length=10,
+        target_type=str
+    )
 
     async def process_form_data(self, interaction: discord.Interaction, data: Dict[str, Any]):
-        # This method is called when the form is submitted and data is extracted
+        # data dictionary now contains type-converted and validated values
         # For the prototype, we'll just send the data back to the user.
         response_message = f"Prototype form submitted by {interaction.user.mention}!\n"
         response_message += "Data received:\n"
         for key, value in data.items():
-            response_message += f"- **{key}**: {value}\n"
+            response_message += f"- **{key}**: {value} (Type: {type(value).__name__})\n" # Show type
 
-        # Ensure interaction is not already responded to
-        if not interaction.response.is_done():
-            await interaction.response.send_message(response_message, ephemeral=True)
-        else:
-            # If already responded (e.g. deferred), use followup
-            await interaction.followup.send(response_message, ephemeral=True)
+        # Since this is called by DispyplusForm.on_submit, interaction is already responded to (deferred by Modal).
+        # We MUST use followup.
+        await interaction.followup.send(response_message, ephemeral=True)
 
-@bot.hybrid_command(name="form_proto_test", description="Test for DispyplusForm prototype.")
+        # For EnhancedContext.ask_form, we need to set the future.
+        if hasattr(self, 'future') and not self.future.done():
+            self.future.set_result(data)
+
+
+@bot.hybrid_command(name="form_proto_test", description="Test for DispyplusForm prototype with EnhancedContext.ask_form.")
 async def form_proto_test_command(ctx: EnhancedContext):
-    """Displays the prototype test form."""
-    if not ctx.interaction:
+    """Displays the prototype test form using ctx.ask_form."""
+    if not ctx.interaction: # ask_form helper also checks this, but good to have guard
         await ctx.send("This command must be used as a slash command to test modals.")
         return
 
-    # Instantiate and send the form
-    # No context needed for DispyplusForm constructor in this simplified prototype
-    test_form = PrototypeTestForm()
-    await ctx.interaction.response.send_modal(test_form)
+    try:
+        # Using the new EnhancedContext.ask_form helper
+        # PrototypeTestForm constructor might take `ctx` if we modify it, for now it doesn't.
+        # If PrototypeTestForm's __init__ was `def __init__(self, ctx, title=None, timeout=None):`
+        # then `ctx=ctx` would be passed automatically by ask_form if `ctx` kwarg is not in `**kwargs_for_form_init`
+        form_data = await ctx.ask_form(PrototypeTestForm, title="Submit Your Info (ctx.ask_form)")
+
+        if form_data:
+            # process_form_data already sent a followup.
+            # This is just to confirm ask_form returned the data.
+            await ctx.followup.send(f"ask_form successfully received data: {list(form_data.keys())}", ephemeral=True)
+        else:
+            # This means the form timed out, or validation failed and future was set to None.
+            # The form itself (handle_validation_errors or on_timeout) should have informed the user.
+            await ctx.followup.send("Form was not successfully submitted (timeout or validation issue).", ephemeral=True)
+
+    except Exception as e:
+        # If process_form_data or something in ask_form raised an error that was set on the future
+        logger.error(f"Error during form_proto_test_command: {e}", exc_info=True)
+        await ctx.followup.send(f"An unexpected error occurred with the form: {e}", ephemeral=True)

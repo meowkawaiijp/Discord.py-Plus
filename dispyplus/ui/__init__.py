@@ -3,7 +3,8 @@
 
 from .components import EnhancedView, InteractiveSelect, AdvancedSelect, TimeoutSelect, PageButton, AdvancedSelectMenu
 from .views import ConfirmationView, PaginatedSelectView, SimpleSelectView
-from .forms import DispyplusForm, field, FormField
+from .forms import DispyplusForm, text_field, BaseFormField, TextInputFormField # Updated form imports
+from .pagination import AdvancedPaginatorView
 
 __all__ = [
     # components
@@ -19,6 +20,12 @@ __all__ = [
     "SimpleSelectView",
     # forms
     "DispyplusForm",
-    "field",
-    "FormField",
+    "text_field", # Renamed from field
+    "BaseFormField",
+    "TextInputFormField",
+    # pagination
+    "AdvancedPaginatorView",
+    # wizard
+    "WizardController", # Experimental
+    "WizardStep",       # Experimental
 ]
