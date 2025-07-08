@@ -6,7 +6,8 @@ from typing import List, Tuple, Any # Added Any
 import discord
 
 # Assuming dispyplus structure, adjust imports as necessary
-from dispyplus.ui.pagination import AdvancedPaginatorView, JumpToPageModal
+from dispyplus.ui.pagination import PaginatorView
+from dispyplus.ui.components import JumpToPageModal # Moved JumpToPageModal
 from dispyplus.core.context import EnhancedContext # For testing the helper
 
 # Minimal mock for discord.ui.View.stop for EnhancedView inheritance
@@ -59,11 +60,11 @@ async def async_iterator_data():
             yield f"Async Item {i}"
     return generator()
 
-# --- Test AdvancedPaginatorView ---
+# --- Test PaginatorView ---
 
 @pytest.mark.asyncio
 async def test_paginator_init_sync(sync_list_data):
-    view = AdvancedPaginatorView(data_source=sync_list_data, items_per_page=10)
+    view = PaginatorView(data_source=sync_list_data, items_per_page=10)
     assert view.items_per_page == 10
     assert view.total_pages == 5 # 50 items / 10 per page
     assert not view._is_async_iterator
@@ -71,7 +72,7 @@ async def test_paginator_init_sync(sync_list_data):
 
 @pytest.mark.asyncio
 async def test_paginator_init_async(async_iterator_data):
-    view = AdvancedPaginatorView(data_source=async_iterator_data, items_per_page=7)
+    view = PaginatorView(data_source=async_iterator_data, items_per_page=7)
     assert view.items_per_page == 7
     assert view.total_pages is None # Not known until data is fetched
     assert view._is_async_iterator
@@ -79,7 +80,7 @@ async def test_paginator_init_async(async_iterator_data):
 
 @pytest.mark.asyncio
 async def test_get_page_data_sync(sync_list_data):
-    view = AdvancedPaginatorView(data_source=sync_list_data, items_per_page=10)
+    view = PaginatorView(data_source=sync_list_data, items_per_page=10)
     page_0 = await view._get_page_data(0)
     assert len(page_0) == 10
     assert page_0[0] == "Item 0"
@@ -91,7 +92,7 @@ async def test_get_page_data_sync(sync_list_data):
 
 @pytest.mark.asyncio
 async def test_get_page_data_async(async_iterator_data):
-    view = AdvancedPaginatorView(data_source=async_iterator_data, items_per_page=7)
+    view = PaginatorView(data_source=async_iterator_data, items_per_page=7)
     page_0 = await view._get_page_data(0) # Fetches first 7
     assert len(page_0) == 7
     assert page_0[0] == "Async Item 0"
@@ -121,7 +122,7 @@ async def test_get_page_data_async(async_iterator_data):
 
 @pytest.mark.asyncio
 async def test_format_page_default_generic(sync_list_data):
-    view = AdvancedPaginatorView(data_source=sync_list_data, items_per_page=3, content_type="generic")
+    view = PaginatorView(data_source=sync_list_data, items_per_page=3, content_type="generic")
     view.current_page_number = 0
     content, embed = await view.format_page()
     assert content is None
@@ -134,7 +135,7 @@ async def test_format_page_default_generic(sync_list_data):
 
 @pytest.mark.asyncio
 async def test_format_page_text_lines(sync_list_data):
-    view = AdvancedPaginatorView(data_source=sync_list_data, items_per_page=2, content_type="text_lines")
+    view = PaginatorView(data_source=sync_list_data, items_per_page=2, content_type="text_lines")
     view.current_page_number = 1 # Page 2
     # Items on page 2 (0-indexed page 1) are "Item 2", "Item 3"
     content, embed = await view.format_page()
@@ -146,7 +147,7 @@ async def test_format_page_text_lines(sync_list_data):
 @pytest.mark.asyncio
 async def test_format_page_embeds():
     embed_list = [discord.Embed(title=f"Embed {i}") for i in range(3)]
-    view = AdvancedPaginatorView(data_source=embed_list, items_per_page=1, content_type="embeds")
+    view = PaginatorView(data_source=embed_list, items_per_page=1, content_type="embeds")
     view.current_page_number = 1
     content, embed = await view.format_page()
     assert content is None
@@ -154,14 +155,14 @@ async def test_format_page_embeds():
     assert embed.title == "Embed 1"
     assert "Page 2/3" in embed.footer.text
 
-def custom_formatter(items: List[str], page_num: int, view_instance: AdvancedPaginatorView) -> Tuple[str, discord.Embed]:
+def custom_formatter(items: List[str], page_num: int, view_instance: PaginatorView) -> Tuple[str, discord.Embed]:
     content_str = f"Custom Content for Page {page_num + 1}"
     embed_ = discord.Embed(title=f"Custom Formatted Page {page_num + 1}", description="\n".join(items))
     return content_str, embed_
 
 @pytest.mark.asyncio
 async def test_format_page_custom_formatter(sync_list_data):
-    view = AdvancedPaginatorView(
+    view = PaginatorView(
         data_source=sync_list_data,
         items_per_page=5,
         content_type="generic",
@@ -181,7 +182,7 @@ async def test_format_page_custom_formatter(sync_list_data):
 
 @pytest.mark.asyncio
 async def test_button_states_initial(sync_list_data):
-    view = AdvancedPaginatorView(data_source=sync_list_data, items_per_page=10, show_page_buttons=True)
+    view = PaginatorView(data_source=sync_list_data, items_per_page=10, show_page_buttons=True)
     await view._update_button_states() # Call manually as send_initial_message is not called
 
     assert view.first_page_button.disabled is True
@@ -192,7 +193,7 @@ async def test_button_states_initial(sync_list_data):
 
 @pytest.mark.asyncio
 async def test_button_states_last_page(sync_list_data):
-    view = AdvancedPaginatorView(data_source=sync_list_data, items_per_page=10, show_page_buttons=True)
+    view = PaginatorView(data_source=sync_list_data, items_per_page=10, show_page_buttons=True)
     view.current_page_number = 4 # Last page (0-indexed)
     await view._update_button_states()
 
@@ -206,7 +207,7 @@ async def test_button_states_last_page(sync_list_data):
 async def test_navigation_next_prev(sync_list_data, mock_interaction):
     # This test is more complex as it involves UI interaction and message editing
     # We'll simplify by checking current_page_number and assuming _navigate works
-    view = AdvancedPaginatorView(data_source=sync_list_data, items_per_page=10, show_page_buttons=True)
+    view = PaginatorView(data_source=sync_list_data, items_per_page=10, show_page_buttons=True)
     view.message = AsyncMock(spec=discord.Message) # Mock the message attribute
 
     # Patch _navigate to prevent actual discord calls and check its call
@@ -224,7 +225,7 @@ async def test_navigation_next_prev(sync_list_data, mock_interaction):
 
 @pytest.mark.asyncio
 async def test_stop_pagination(sync_list_data, mock_interaction):
-    view = AdvancedPaginatorView(data_source=sync_list_data, items_per_page=10, show_page_buttons=True)
+    view = PaginatorView(data_source=sync_list_data, items_per_page=10, show_page_buttons=True)
     view.message = AsyncMock(spec=discord.Message) # Mock the message attribute
     view.current_page_content = "Test" # Set some content for edit_message
     view.current_page_embed = None
@@ -249,7 +250,7 @@ async def test_stop_pagination(sync_list_data, mock_interaction):
 @pytest.mark.asyncio
 async def test_jump_to_page_modal_submit_valid(mock_interaction):
     # Mock the paginator view that the modal would interact with
-    mock_paginator_view = AsyncMock(spec=AdvancedPaginatorView)
+    mock_paginator_view = AsyncMock(spec=PaginatorView)
     mock_paginator_view.total_pages = 10
     mock_paginator_view._navigate = AsyncMock() # Mock the navigation method
 
@@ -263,7 +264,7 @@ async def test_jump_to_page_modal_submit_valid(mock_interaction):
 
 @pytest.mark.asyncio
 async def test_jump_to_page_modal_submit_invalid_oor(mock_interaction): # Out Of Range
-    mock_paginator_view = AsyncMock(spec=AdvancedPaginatorView)
+    mock_paginator_view = AsyncMock(spec=PaginatorView)
     mock_paginator_view.total_pages = 5
 
     modal = JumpToPageModal(paginator_view=mock_paginator_view)
@@ -279,7 +280,7 @@ async def test_jump_to_page_modal_submit_invalid_oor(mock_interaction): # Out Of
 
 @pytest.mark.asyncio
 async def test_jump_to_page_modal_submit_invalid_nan(mock_interaction): # Not A Number
-    mock_paginator_view = AsyncMock(spec=AdvancedPaginatorView)
+    mock_paginator_view = AsyncMock(spec=PaginatorView)
     mock_paginator_view.total_pages = 5
 
     modal = JumpToPageModal(paginator_view=mock_paginator_view)
@@ -295,15 +296,15 @@ async def test_jump_to_page_modal_submit_invalid_nan(mock_interaction): # Not A 
 # --- Test EnhancedContext.paginate helper ---
 @pytest.mark.asyncio
 async def test_enhanced_context_paginate_helper(mock_context, sync_list_data):
-    # Patch AdvancedPaginatorView to check its instantiation and method calls
-    with patch('dispyplus.core.context.AdvancedPaginatorView', autospec=True) as MockPaginator:
+    # Patch PaginatorView to check its instantiation and method calls
+    with patch('dispyplus.core.context.PaginatorView', autospec=True) as MockPaginator:
         mock_paginator_instance = MockPaginator.return_value
         mock_paginator_instance.send_initial_message = AsyncMock(return_value=AsyncMock(spec=discord.Message))
 
         # Call the helper
         message = await mock_context.paginate(data_source=sync_list_data, items_per_page=5)
 
-        # Assert AdvancedPaginatorView was called correctly
+        # Assert PaginatorView was called correctly
         MockPaginator.assert_called_once_with(
             data_source=sync_list_data,
             items_per_page=5,
@@ -323,7 +324,7 @@ async def test_enhanced_context_paginate_helper(mock_context, sync_list_data):
 
 @pytest.mark.asyncio
 async def test_page_select_menu_update_and_callback(sync_list_data, mock_interaction):
-    view = AdvancedPaginatorView(
+    view = PaginatorView(
         data_source=sync_list_data,
         items_per_page=10,
         show_page_select=True,

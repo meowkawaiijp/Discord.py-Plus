@@ -2,19 +2,19 @@ from typing import List, Any, Optional, Union, Callable, AsyncIterator, Tuple, L
 import discord
 import math
 
-from .components import EnhancedView
+from .components import EnhancedView, JumpToPageModal
 # from ..core.context import EnhancedContext # Avoid circular import for now, pass ctx as arg
 
-class AdvancedPaginatorView(EnhancedView):
+class PaginatorView(EnhancedView):
     """
-    An advanced pagination view that supports various content types and data sources.
+    A pagination view that supports various content types and data sources.
     """
     def __init__(self,
                  # ctx: "EnhancedContext", # Will be passed to start() or similar
                  data_source: Union[List[Any], AsyncIterator[Any]],
                  items_per_page: int = 10,
                  *,
-                 formatter_func: Optional[Callable[[List[Any], int, "AdvancedPaginatorView"], Union[str, discord.Embed, Tuple[Optional[str], Optional[discord.Embed]]]]] = None,
+                 formatter_func: Optional[Callable[[List[Any], int, "PaginatorView"], Union[str, discord.Embed, Tuple[Optional[str], Optional[discord.Embed]]]]] = None,
                  content_type: Literal["embeds", "text_lines", "generic"] = "generic", # Removed "field_groups" for now
                  show_page_buttons: bool = True,
                  show_page_select: bool = False,
@@ -720,61 +720,3 @@ if __name__ == "__main__":
     # However, this test is more for verifying the _get_page_data logic locally.
     # Full testing requires bot integration.
     pass
-
-class JumpToPageModal(discord.ui.Modal):
-    def __init__(self, title: str = "Jump to Page", paginator_view: AdvancedPaginatorView = None):
-        super().__init__(title=title)
-        self.paginator_view = paginator_view
-        self.page_number_input = discord.ui.TextInput(
-            label="Page Number",
-            placeholder=f"Enter page (1-{self.paginator_view.total_pages or '?'})",
-            required=True,
-            min_length=1,
-            max_length=len(str(self.paginator_view.total_pages)) + 2 if self.paginator_view.total_pages else 7 # Max length for page number
-        )
-        self.add_item(self.page_number_input)
-
-    async def on_submit(self, interaction: discord.Interaction):
-        if not self.paginator_view:
-            await interaction.response.send_message("Error: Paginator context lost.", ephemeral=True)
-            return
-
-        try:
-            page_num_str = self.page_number_input.value
-            page_num_target = int(page_num_str) - 1 # Convert to 0-indexed
-
-            max_page = self.paginator_view.total_pages
-            min_page = 0
-
-            # For async iterators where total_pages might not be known yet,
-            # we can only validate if page_num_target is negative.
-            # The upper bound will be checked when _get_page_data is called.
-            if max_page is None and not self.paginator_view._async_iterator_exhausted:
-                 if page_num_target < min_page:
-                    await interaction.response.send_message(f"Page number must be positive.", ephemeral=True)
-                    return
-                 # Cannot validate upper bound yet.
-            elif max_page is not None: # total_pages is known
-                if not (min_page <= page_num_target < max_page):
-                    await interaction.response.send_message(f"Invalid page number. Please enter a number between 1 and {max_page}.", ephemeral=True)
-                    return
-            elif self.paginator_view._async_iterator_exhausted and max_page is None: # Should not happen if total_pages updated correctly
-                 await interaction.response.send_message(f"Cannot determine total pages yet.", ephemeral=True)
-                 return
-
-
-            self.paginator_view.current_page_number = page_num_target
-            # Use the paginator's navigation logic, which handles updating content and buttons
-            await self.paginator_view._navigate(interaction)
-            # No explicit response needed here as _navigate handles editing the original message
-
-        except ValueError:
-            await interaction.response.send_message("Invalid input. Please enter a valid page number.", ephemeral=True)
-        except Exception as e:
-            # Log the error
-            # self.paginator_view.ctx.bot.logger.error(...) # TODO: Add proper logging via context/bot
-            print(f"Error in JumpToPageModal on_submit: {e}") # Basic logging for now
-            if not interaction.response.is_done():
-                await interaction.response.send_message("An error occurred while processing the page number.", ephemeral=True)
-            else: # If already responded (e.g. by defer in _navigate), try followup
-                await interaction.followup.send("An error occurred while processing the page number.",ephemeral=True)

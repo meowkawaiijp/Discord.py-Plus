@@ -276,4 +276,65 @@ class AdvancedSelect(EnhancedView):
         await self.wait()
         return self.selected_values
 
-__all__ = ["EnhancedView", "InteractiveSelect", "AdvancedSelect", "TimeoutSelect", "PageButton", "AdvancedSelectMenu"]
+class JumpToPageModal(discord.ui.Modal):
+    def __init__(self, title: str = "Jump to Page", paginator_view: Any = None): # Changed AdvancedPaginatorView to Any to avoid circular import for now
+        super().__init__(title=title)
+        self.paginator_view = paginator_view
+        self.page_number_input = discord.ui.TextInput(
+            label="Page Number",
+            placeholder=f"Enter page (1-{self.paginator_view.total_pages if hasattr(self.paginator_view, 'total_pages') and self.paginator_view.total_pages is not None else '?'})",
+            required=True,
+            min_length=1,
+            max_length=len(str(self.paginator_view.total_pages)) + 2 if hasattr(self.paginator_view, 'total_pages') and self.paginator_view.total_pages is not None else 7 # Max length for page number
+        )
+        self.add_item(self.page_number_input)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        if not self.paginator_view:
+            await interaction.response.send_message("Error: Paginator context lost.", ephemeral=True)
+            return
+
+        try:
+            page_num_str = self.page_number_input.value
+            page_num_target = int(page_num_str) - 1 # Convert to 0-indexed
+
+            # Accessing paginator_view attributes safely
+            total_pages = getattr(self.paginator_view, 'total_pages', None)
+            is_exhausted = getattr(self.paginator_view, '_async_iterator_exhausted', False)
+
+
+            min_page = 0
+
+            if total_pages is None and not is_exhausted:
+                 if page_num_target < min_page:
+                    await interaction.response.send_message(f"Page number must be positive.", ephemeral=True)
+                    return
+            elif total_pages is not None:
+                if not (min_page <= page_num_target < total_pages):
+                    await interaction.response.send_message(f"Invalid page number. Please enter a number between 1 and {total_pages}.", ephemeral=True)
+                    return
+            elif is_exhausted and total_pages is None:
+                 await interaction.response.send_message(f"Cannot determine total pages yet.", ephemeral=True)
+                 return
+
+
+            self.paginator_view.current_page_number = page_num_target
+            if hasattr(self.paginator_view, '_navigate'):
+                await self.paginator_view._navigate(interaction)
+            else:
+                # Fallback or error if _navigate is not found
+                await interaction.response.send_message("Error: Navigation function not found in paginator.", ephemeral=True)
+
+
+        except ValueError:
+            await interaction.response.send_message("Invalid input. Please enter a valid page number.", ephemeral=True)
+        except Exception as e:
+            # Proper logging should be implemented in the bot or context
+            print(f"Error in JumpToPageModal on_submit: {e}")
+            if not interaction.response.is_done():
+                await interaction.response.send_message("An error occurred while processing the page number.", ephemeral=True)
+            else:
+                await interaction.followup.send("An error occurred while processing the page number.",ephemeral=True)
+
+
+__all__ = ["EnhancedView", "InteractiveSelect", "AdvancedSelect", "TimeoutSelect", "PageButton", "AdvancedSelectMenu", "JumpToPageModal"]
