@@ -18,8 +18,8 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(include=['dispyplus', 'dispyplus.*']),
     install_requires=[
-        "discord.py>=2.0.0", # discord.py のバージョンを指定
-        "aiohttp>=3.8.0",    # aiohttp のバージョンを指定 (EnhancedBot で使用)
+        "discord.py>=2.0.0", 
+        "aiohttp>=3.8.0",  
     ],
     keywords=['python', 'discord', 'discord.py', 'bot', 'utility'],
     classifiers=[
@@ -30,7 +30,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "License :: OSI Approved :: MIT License", # ライセンスに合わせて変更
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Communications :: Chat",
