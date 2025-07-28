@@ -1,0 +1,32 @@
+{
+  "bot": {
+    "token": "YOUR_BOT_TOKEN_HERE",
+    "prefix": "!",
+    "name": "DispyPlus Bot",
+    "description": "A Discord bot using the dispyplus library"
+  },
+  "features": {
+    "welcome_messages": true,
+    "auto_role": false,
+    "moderation": true
+  },
+  "channels": {
+    "welcome": null,
+    "logs": null,
+    "general": null
+  },
+  "roles": {
+    "default": null,
+    "moderator": null,
+    "admin": null
+  },
+  "database": {
+    "url": "sqlite:///bot.db",
+    "echo": false
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "bot.log",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  }
+}
